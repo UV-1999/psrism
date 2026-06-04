@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psrism"
+version = "0.1.0"
+description = "CLI tools for pulsar ISM dynamic spectrum analysis"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "scipy",
+]
+
+[project.scripts]
+psrism = "psrism.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]

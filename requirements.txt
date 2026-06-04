@@ -1,0 +1,6 @@
+numpy
+scipy
+matplotlib
+
+# psrchive is required for archive loading and is usually installed separately
+# through conda/conda-forge or a local PSRCHIVE build.
