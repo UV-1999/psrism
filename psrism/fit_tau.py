@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 
@@ -19,6 +20,10 @@ class TauFitResult:
     tau_bins_error: float
     tau_seconds: float | None = None
     tau_seconds_error: float | None = None
+    chi_square: float | None = None
+    reduced_chi_square: float | None = None
+    dof: int | None = None
+    rms_residual: float | None = None
 
 
 @dataclass(frozen=True)
@@ -67,6 +72,12 @@ def fit_tau_from_profile(profile, period_s: float | None = None) -> TauFitResult
     bounds = ([0.0, 0.0, 1e-6, 1e-6], [np.inf, nbin, np.inf, np.inf])
     popt, pcov = curve_fit(scattered_pulse, t, prof, p0=p0, bounds=bounds, maxfev=20000)
     tau_err = float(np.sqrt(np.diag(pcov))[3])
+    model = scattered_pulse(t, *popt)
+    residual = prof - model
+    chi_square = float(np.sum(residual**2))
+    dof = max(nbin - len(popt), 0)
+    reduced_chi_square = float(chi_square / dof) if dof > 0 else None
+    rms_residual = float(np.sqrt(np.mean(residual**2)))
 
     tau_seconds = None
     tau_seconds_error = None
@@ -82,6 +93,10 @@ def fit_tau_from_profile(profile, period_s: float | None = None) -> TauFitResult
         tau_bins_error=tau_err,
         tau_seconds=tau_seconds,
         tau_seconds_error=tau_seconds_error,
+        chi_square=chi_square,
+        reduced_chi_square=reduced_chi_square,
+        dof=dof,
+        rms_residual=rms_residual,
     )
 
 
@@ -164,7 +179,6 @@ def _integrated_subband_profile(archive, channel_indices, frequencies_mhz):
     integration = archive.get_Integration(0)
     profiles = []
     weights = []
-    freqs = []
 
     for ichan in channel_indices:
         weight = float(integration.get_weight(int(ichan)))
@@ -173,19 +187,23 @@ def _integrated_subband_profile(archive, channel_indices, frequencies_mhz):
         profile = np.asarray(integration.get_Profile(0, int(ichan)).get_amps(), dtype=float)
         profiles.append(profile * weight)
         weights.append(weight)
-        freqs.append(float(frequencies_mhz[int(ichan)]) * weight)
 
     if not profiles:
         raise ValueError("subband has no channels with positive weights")
 
     weight_sum = float(np.sum(weights))
     profile = np.sum(profiles, axis=0) / weight_sum
-    frequency = float(np.sum(freqs) / weight_sum)
+    frequency = _subband_center_frequency_mhz(frequencies_mhz, channel_indices)
     profile = profile - np.min(profile)
     mx = np.max(profile)
     if mx != 0:
         profile = profile / mx
     return profile, frequency
+
+
+def _subband_center_frequency_mhz(frequencies_mhz, channel_indices) -> float:
+    subband_freq = np.asarray(frequencies_mhz, dtype=float)[channel_indices]
+    return float((np.min(subband_freq) + np.max(subband_freq)) / 2.0)
 
 
 def plot_tau_fit(profile, result: TauFitResult, output_path: str | None = None):
@@ -218,18 +236,25 @@ def plot_tau_fit(profile, result: TauFitResult, output_path: str | None = None):
 
 def plot_subband_tau_fits(
     result: ScatteringSpectralIndexResult,
+    title: str | None = None,
     output_path: str | None = None,
 ):
     """Plot observed subband profiles with fitted scattered-pulse overlays."""
     import matplotlib.pyplot as plt
 
-    nplots = len(result.subbands)
-    ncols = min(3, nplots)
-    nrows = int(np.ceil(nplots / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(4.2 * ncols, 3.2 * nrows), squeeze=False)
+    subbands = sorted(result.subbands, key=lambda item: item.frequency_mhz)
+    nplots = len(subbands)
+    fig, axes = plt.subplots(
+        nplots,
+        1,
+        figsize=(8.5, max(3.0 * nplots, 4.5)),
+        sharex=True,
+        squeeze=False,
+    )
 
-    for ax, subband in zip(axes.ravel(), result.subbands):
+    for ax, subband in zip(axes.ravel(), subbands):
         profile = _normalise_profile(subband.profile)
+        phase = np.linspace(0.0, 1.0, len(profile), endpoint=False)
         bins = np.arange(len(profile))
         fit_curve = scattered_pulse(
             bins,
@@ -240,18 +265,37 @@ def plot_subband_tau_fits(
         )
         fit_curve = _normalise_profile(fit_curve)
 
-        ax.plot(bins, profile, color="black", label="Profile")
-        ax.plot(bins, fit_curve, color="tab:red", linewidth=2, label="Fit")
-        ax.set_title(f"{subband.frequency_mhz:.2f} MHz")
-        ax.set_xlabel("Phase bin")
+        ax.plot(phase, profile, color="black", label="Profile")
+        ax.plot(phase, fit_curve, color="tab:red", linewidth=2, label="Fit")
         ax.set_ylabel("Normalized flux")
+        ax.text(
+            0.985,
+            0.88,
+            f"{subband.frequency_mhz:.2f} MHz\n"
+            f"τ = {subband.tau * 1e3:.4g} ± {subband.tau_error * 1e3:.2g} ms",
+            transform=ax.transAxes,
+            ha="right",
+            va="top",
+            fontsize=9,
+            bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "alpha": 0.75, "edgecolor": "none"},
+        )
         ax.legend(loc="best", fontsize=8)
 
-    for ax in axes.ravel()[nplots:]:
-        ax.axis("off")
+    axes[-1, 0].set_xlabel("Pulse phase")
+    fit_quality = "; ".join(_subband_fit_caption(item) for item in subbands)
+    fig.text(
+        0.5,
+        0.015,
+        f"Fit quality: {fit_quality}",
+        ha="center",
+        va="bottom",
+        fontsize=9,
+        wrap=True,
+    )
 
-    fig.suptitle("Subband Tau Fits")
-    fig.tight_layout()
+    if title:
+        fig.suptitle(Path(title).name)
+    fig.tight_layout(rect=(0, 0.06, 1, 0.97))
     if output_path:
         fig.savefig(output_path, dpi=150)
     return fig
@@ -264,3 +308,15 @@ def _normalise_profile(profile) -> np.ndarray:
     if mx != 0:
         prof = prof / mx
     return prof
+
+
+def _subband_fit_caption(subband: SubbandTauResult) -> str:
+    reduced = _format_optional_float(subband.fit.reduced_chi_square)
+    rms = _format_optional_float(subband.fit.rms_residual)
+    return f"{subband.frequency_mhz:.2f} MHz: unweighted red. χ²={reduced}, RMS={rms}"
+
+
+def _format_optional_float(value: float | None) -> str:
+    if value is None or not np.isfinite(value):
+        return "n/a"
+    return f"{value:.3g}"

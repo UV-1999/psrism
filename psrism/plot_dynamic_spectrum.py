@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 
 from .archive_io import frequency_phase_array, time_phase_array
@@ -45,7 +47,7 @@ def plot_dynamic_spectrum(dynspec, metadata, output_path: str | None = None):
     )
     ax_main.set_xlabel("Time (min)")
     ax_main.set_ylabel("Frequency (MHz)")
-    ax_main.set_title("Dynamic Spectrum")
+    fig.suptitle(_plot_title(metadata.filename))
 
     ax_top.plot(np.linspace(0, metadata.observation_time_s / 60.0, nsub), time_proj, color="black")
     ax_top.set_ylabel("Flux")
@@ -59,6 +61,7 @@ def plot_dynamic_spectrum(dynspec, metadata, output_path: str | None = None):
     ax_right.set_xlabel("Flux")
     ax_right.tick_params(labelleft=False)
     fig.colorbar(im, cax=ax_cbar, label="Flux")
+    fig.subplots_adjust(top=0.90)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight")
@@ -85,8 +88,8 @@ def plot_integrated_profile(
     freq_axis = np.linspace(metadata.frequency_low_mhz, metadata.frequency_high_mhz, nchan)
     prof_int = _normalise_profile(np.mean(mat_time, axis=0))
 
-    fig = plt.figure(figsize=(8, 8))
-    gs = gridspec.GridSpec(3, 1, height_ratios=[1, 2, 2])
+    fig = plt.figure(figsize=(8.5, 9.2))
+    gs = gridspec.GridSpec(3, 1, height_ratios=[1, 1, 1])
     ax_top = fig.add_subplot(gs[0])
     ax_freq = fig.add_subplot(gs[1], sharex=ax_top)
     ax_time = fig.add_subplot(gs[2], sharex=ax_top)
@@ -110,7 +113,6 @@ def plot_integrated_profile(
     ax_top.axhline(mx / 10.0, color="red", label="1/10 max")
     ax_top.axhline(mx / 2.0, color="blue", label="1/2 max")
     ax_top.set_ylabel("Normalized flux")
-    ax_top.set_title("Integrated Pulse Profile")
     ax_top.legend(loc="best")
 
     ax_freq.imshow(
@@ -121,7 +123,6 @@ def plot_integrated_profile(
         extent=(0, 1, freq_axis.min(), freq_axis.max()),
     )
     ax_freq.set_ylabel("Frequency (MHz)")
-    ax_freq.set_title("Frequency vs Phase")
 
     ax_time.imshow(
         mat_time,
@@ -132,9 +133,18 @@ def plot_integrated_profile(
     )
     ax_time.set_ylabel("Time (min)")
     ax_time.set_xlabel("Pulse phase")
-    ax_time.set_title("Time vs Phase")
+    if tau_fit_result is not None:
+        fig.text(
+            0.5,
+            0.018,
+            _tau_caption(tau_fit_result),
+            ha="center",
+            va="bottom",
+            fontsize=9,
+        )
 
-    fig.tight_layout()
+    fig.suptitle(_plot_title(metadata.filename))
+    fig.tight_layout(rect=(0, 0.06 if tau_fit_result is not None else 0, 1, 0.96))
     if output_path:
         fig.savefig(output_path)
     return fig
@@ -147,3 +157,25 @@ def _normalise_profile(profile) -> np.ndarray:
     if mx != 0:
         prof = prof / mx
     return prof
+
+
+def _plot_title(filename: str) -> str:
+    return Path(filename).name
+
+
+def _tau_caption(result) -> str:
+    tau_seconds = result.tau_seconds
+    tau_seconds_error = result.tau_seconds_error
+    if tau_seconds is None or tau_seconds_error is None:
+        tau_text = f"τ = {result.tau_bins:.4g} ± {result.tau_bins_error:.2g} bins"
+    else:
+        tau_text = f"τ = {tau_seconds * 1e3:.4g} ± {tau_seconds_error * 1e3:.2g} ms"
+    reduced = _format_optional_float(result.reduced_chi_square)
+    rms = _format_optional_float(result.rms_residual)
+    return f"{tau_text}; unweighted reduced χ²={reduced}; RMS residual={rms}"
+
+
+def _format_optional_float(value) -> str:
+    if value is None or not np.isfinite(value):
+        return "n/a"
+    return f"{value:.3g}"

@@ -73,8 +73,37 @@ def _validate_scrunch_target(name: str, current: int, target: int) -> None:
     if current % target != 0:
         raise ValueError(
             f"--{name}={target} is not valid for current {name}={current}; "
-            f"choose a divisor of {current}"
+            f"choose one of: {format_scrunch_targets(current)}"
         )
+
+
+def valid_scrunch_targets(current: int) -> list[int]:
+    """Return all target sizes that PSRCHIVE can scrunch to for a dimension."""
+    if current <= 0:
+        return []
+    return [value for value in range(1, current + 1) if current % value == 0]
+
+
+def suggested_scrunch_targets(current: int, max_items: int = 16) -> list[int]:
+    """Return a compact list of useful smaller scrunch targets."""
+    values = [value for value in valid_scrunch_targets(current) if value < current]
+    if len(values) <= max_items:
+        return values
+    head_count = max_items // 2
+    tail_count = max_items - head_count
+    return values[:head_count] + values[-tail_count:]
+
+
+def format_scrunch_targets(current: int) -> str:
+    """Format valid scrunch targets for terminal messages."""
+    targets = suggested_scrunch_targets(current)
+    if not targets:
+        return "none"
+    all_targets = [value for value in valid_scrunch_targets(current) if value < current]
+    text = ", ".join(str(value) for value in targets)
+    if len(all_targets) > len(targets):
+        text += f" ... ({len(all_targets)} total smaller divisors)"
+    return text
 
 
 def archive_metadata(archive, raw_shape: Optional[tuple[int, ...]] = None) -> ArchiveMetadata:

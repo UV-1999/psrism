@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 
 from .autocorrelation_spectrum import autocorrelation_axes
@@ -53,9 +55,9 @@ def plot_autocorrelation_spectrum(acf2d, metadata, output_path: str | None = Non
         aspect="auto",
         cmap="afmhot",
     )
-    ax_main.set_title("Autocorrelation Spectrum")
     ax_main.set_xlabel("Time lag (s)")
     ax_main.set_ylabel("Frequency lag (MHz)")
+    fig.suptitle(Path(metadata.filename).name)
 
     ax_top.plot(time_lag, time_proj, color="black")
     ax_top.set_ylabel("ACF")
@@ -65,6 +67,7 @@ def plot_autocorrelation_spectrum(acf2d, metadata, output_path: str | None = Non
     ax_right.set_xlabel("ACF")
     ax_right.tick_params(labelleft=False)
     fig.colorbar(im, cax=ax_cbar, label="ACF")
+    fig.subplots_adjust(top=0.90)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight")

@@ -25,6 +25,7 @@ Purpose: extract ISM related parameters from pulsar data.
     group_plot.add_argument("--intpf", action="store_true", help="plot integrated pulse profile")
     group_plot.add_argument("--fit-tau", action="store_true", help="fit tau from the integrated profile")
     group_plot.add_argument("--fit-alpha", action="store_true", help="fit tau per subband and alpha")
+    group_plot.add_argument("--inspect", action="store_true", help="show archive dimensions and valid scrunch targets")
 
     group_meta = parser.add_argument_group("Processing options")
     group_meta.add_argument("--dm", type=float, help="dispersion measure to apply (pc cm^-3)")
@@ -75,12 +76,22 @@ def _print_metadata(metadata):
         print(f" Axis {i}: {name} = {size}")
 
 
+def _print_scrunch_targets(shape, formatter, file=None) -> None:
+    stream = file or sys.stdout
+    nsub, _npol, nchan, nbin = shape
+    print("\nValid scrunch targets smaller than current dimensions:", file=stream)
+    print(f" --nsub  current {nsub}: {formatter(nsub)}", file=stream)
+    print(f" --nchan current {nchan}: {formatter(nchan)}", file=stream)
+    print(f" --nbin  current {nbin}: {formatter(nbin)}", file=stream)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
     from .archive_io import (
         archive_metadata,
         archive_shape,
+        format_scrunch_targets,
         integrated_profile_array,
         load_archive,
         preprocess_archive,
@@ -113,6 +124,12 @@ def main(argv: list[str] | None = None) -> int:
     raw_shape = archive_shape(archive)
 
     print(f"\nLoaded archive: {args.archive}")
+    if args.inspect:
+        metadata = archive_metadata(archive, raw_shape=raw_shape)
+        _print_metadata(metadata)
+        _print_scrunch_targets(raw_shape, format_scrunch_targets)
+        return 0
+
     try:
         preprocess_archive(
             archive,
@@ -123,6 +140,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     except (RuntimeError, ValueError) as exc:
         print(f"psrism: error: {exc}", file=sys.stderr)
+        _print_scrunch_targets(raw_shape, format_scrunch_targets, file=sys.stderr)
         return 2
     metadata = archive_metadata(archive, raw_shape=raw_shape)
     _print_metadata(metadata)
@@ -180,6 +198,7 @@ def main(argv: list[str] | None = None) -> int:
             spectrum,
             fringe_frequency,
             delay,
+            title=metadata.filename,
             output_path=f"{metadata.outname}_sspec.png",
         )
 
@@ -220,10 +239,12 @@ def main(argv: list[str] | None = None) -> int:
             tau_error=[item.tau_error for item in result.subbands],
             alpha_result=alpha_fit,
             reference_freq_mhz=alpha_fit.reference_freq_mhz,
+            title=metadata.filename,
             output_path=f"{metadata.outname}_tau_vs_freq.png",
         )
         plot_subband_tau_fits(
             result,
+            title=metadata.filename,
             output_path=f"{metadata.outname}_subband_tau_fits.png",
         )
 
@@ -238,6 +259,10 @@ def _print_tau_result(result, label: str) -> None:
             f" tau = {result.tau_seconds:.6e} +/- "
             f"{result.tau_seconds_error:.6e} s"
         )
+    print(
+        f" goodness: unweighted reduced chi-square = {_format_optional_float(result.reduced_chi_square)}, "
+        f"RMS residual = {_format_optional_float(result.rms_residual)}"
+    )
 
 
 def _print_acf_scales(scales) -> None:
@@ -251,6 +276,12 @@ def _print_acf_scales(scales) -> None:
         print(" diffractive timescale: unavailable")
     else:
         print(f" diffractive timescale = {scales.diffractive_timescale_s:.6g} s")
+
+
+def _format_optional_float(value) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.6g}"
 
 
 if __name__ == "__main__":

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 
 
@@ -9,6 +11,7 @@ def plot_scintillation_spectrum(
     spectrum,
     fringe_frequency,
     delay,
+    title: str | None = None,
     output_path: str | None = None,
 ):
     import matplotlib.pyplot as plt
@@ -42,9 +45,10 @@ def plot_scintillation_spectrum(
         aspect="auto",
         cmap="afmhot",
     )
-    ax_main.set_title("Secondary Spectrum")
     ax_main.set_xlabel("Fringe frequency (Hz)")
     ax_main.set_ylabel("Delay (s)")
+    if title:
+        fig.suptitle(Path(title).name)
 
     ax_top.plot(fringe_frequency, fringe_proj, color="black")
     ax_top.set_ylabel("Power")
@@ -54,6 +58,7 @@ def plot_scintillation_spectrum(
     ax_right.set_xlabel("Power")
     ax_right.tick_params(labelleft=False)
     fig.colorbar(im, cax=ax_cbar, label="Power")
+    fig.subplots_adjust(top=0.90)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight")
