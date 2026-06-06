@@ -97,7 +97,7 @@ The dynamic spectrum shows pulse intensity as a function of observing time and r
 
 For each subintegration and frequency channel, `psrism` estimates an on-pulse flux from the noise-normalized pulse profile:
 
-$$
+```math
 E(t,\nu)=
 \max\left[
 0,\,
@@ -107,7 +107,7 @@ E(t,\nu)=
 {\sigma_{\rm off}(t,\nu)}
 d\phi
 \right].
-$$
+```
 
 Here `P(t,ν,φ)` is the pulse profile at time `t`, frequency `ν`, and pulse phase `φ`. The off-pulse mean and standard deviation are:
 
