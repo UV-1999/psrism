@@ -100,9 +100,9 @@ def fit_tau_from_profile(profile, period_s: float | None = None) -> TauFitResult
     )
 
 
-def fit_tau_from_archive(archive) -> TauFitResult:
+def fit_tau_from_archive(archive, center_peak: bool = False) -> TauFitResult:
     """Fit tau from an archive integrated profile."""
-    profile = integrated_profile_array(archive)
+    profile = integrated_profile_array(archive, center_peak=center_peak)
     period_s = archive.get_Integration(0).get_folding_period()
     return fit_tau_from_profile(profile, period_s=period_s)
 

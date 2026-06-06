@@ -148,14 +148,23 @@ def archive_data_to_numpy(archive, remove_baseline: bool = True) -> np.ndarray:
     return np.asarray(temp.get_data())
 
 
-def integrated_profile_array(archive, normalize: bool = True) -> np.ndarray:
+def integrated_profile_array(
+    archive,
+    normalize: bool = True,
+    center_peak: bool = False,
+    target_bin_fraction: float = 0.25,
+) -> np.ndarray:
     """Return a baseline-removed integrated pulse profile."""
     temp = archive.clone()
     temp.tscrunch()
     temp.fscrunch()
     temp.remove_baseline()
 
-    profile = np.asarray(temp[0].get_Profile(0, 0).get_amps(), dtype=float)
+    profile_obj = temp[0].get_Profile(0, 0)
+    profile = np.asarray(profile_obj.get_amps(), dtype=float)
+    if center_peak:
+        target_bin = int(len(profile) * target_bin_fraction)
+        profile = np.roll(profile, target_bin - profile_obj.find_max_bin())
     if normalize:
         profile = profile - np.min(profile)
         mx = np.max(profile)
@@ -164,7 +173,19 @@ def integrated_profile_array(archive, normalize: bool = True) -> np.ndarray:
     return profile
 
 
-def time_phase_array(archive) -> np.ndarray:
+def integrated_profile_shift(archive, target_bin_fraction: float = 0.25) -> int:
+    """Return the shift that centers the integrated-profile peak at target phase."""
+    temp = archive.clone()
+    temp.tscrunch()
+    temp.fscrunch()
+    temp.remove_baseline()
+
+    profile_obj = temp[0].get_Profile(0, 0)
+    target_bin = int(temp.get_nbin() * target_bin_fraction)
+    return target_bin - profile_obj.find_max_bin()
+
+
+def time_phase_array(archive, phase_shift: int | None = None) -> np.ndarray:
     """Return a time-vs-phase matrix after frequency scrunching."""
     temp = archive.clone()
     temp.fscrunch()
@@ -177,12 +198,13 @@ def time_phase_array(archive) -> np.ndarray:
     for isub in range(nsub):
         prof_obj = temp[isub].get_Profile(0, 0)
         prof = np.asarray(prof_obj.get_amps(), dtype=float)
-        matrix[isub] = np.roll(prof, (nbin // 4) - prof_obj.find_max_bin())
+        shift = phase_shift if phase_shift is not None else (nbin // 4) - prof_obj.find_max_bin()
+        matrix[isub] = np.roll(prof, shift)
 
     return matrix
 
 
-def frequency_phase_array(archive) -> np.ndarray:
+def frequency_phase_array(archive, phase_shift: int | None = None) -> np.ndarray:
     """Return a frequency-vs-phase matrix after time scrunching."""
     temp = archive.clone()
     temp.tscrunch()
@@ -195,6 +217,7 @@ def frequency_phase_array(archive) -> np.ndarray:
     for ichan in range(nchan):
         prof_obj = temp[0].get_Profile(0, ichan)
         prof = np.asarray(prof_obj.get_amps(), dtype=float)
-        matrix[ichan] = np.roll(prof, (nbin // 4) - prof_obj.find_max_bin())
+        shift = phase_shift if phase_shift is not None else (nbin // 4) - prof_obj.find_max_bin()
+        matrix[ichan] = np.roll(prof, shift)
 
     return matrix

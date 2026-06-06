@@ -2,9 +2,7 @@
 
 `psrism` is a command-line Python package for pulsar interstellar-medium analysis from PSRCHIVE-readable archive files. It is designed for studying pulse broadening, diffractive scintillation, scintillation bandwidths and timescales, secondary spectra, and the frequency scaling of scattering in radio pulsar observations.
 
-Scientifically, `psrism` turns a calibrated pulsar archive into analysis products such as dynamic spectra, autocorrelation spectra, secondary spectra, integrated pulse profiles, scattering timescales \( \tau \), and scattering spectral indices \( \alpha \). It uses `psrchive` for archive I/O and standard scientific Python tools for numerical work, fitting, and plotting. Python dependencies are listed in [`requirements.txt`](requirements.txt). `psrchive` is usually installed separately, for example through conda-forge or a local PSRCHIVE build.
-
-The original monolithic script is kept as [`psrism.py`](psrism.py) for reference. The package implementation lives in [`psrism/`](psrism/).
+Scientifically, `psrism` turns a calibrated pulsar archive into analysis products such as dynamic spectra, autocorrelation spectra, secondary spectra, integrated pulse profiles, scattering timescales τ, and scattering spectral indices α. It uses `psrchive` for archive I/O and standard scientific Python tools for numerical work, fitting, and plotting. Python dependencies are listed in [`requirements.txt`](requirements.txt). `psrchive` is usually installed separately, for example through conda-forge or a local PSRCHIVE build.
 
 ## install
 
@@ -99,7 +97,7 @@ The dynamic spectrum shows pulse intensity as a function of observing time and r
 
 For each subintegration and frequency channel, `psrism` estimates an on-pulse flux from the noise-normalized pulse profile:
 
-$$
+```math
 E(t,\nu)=
 \max\left[
 0,\,
@@ -109,13 +107,13 @@ E(t,\nu)=
 {\sigma_{\rm off}(t,\nu)}
 d\phi
 \right].
-$$
+```
 
-Here \(P(t,\nu,\phi)\) is the pulse profile at time \(t\), frequency \(\nu\), and pulse phase \(\phi\). The off-pulse mean and standard deviation are:
+Here `P(t,ν,φ)` is the pulse profile at time `t`, frequency `ν`, and pulse phase `φ`. The off-pulse mean and standard deviation are:
 
-$$
+```math
 \mu_{\rm off}(t,\nu), \qquad \sigma_{\rm off}(t,\nu).
-$$
+```
 
 In the code, the on-pulse window is estimated in [`psrism/dynamic_flux.py`](psrism/dynamic_flux.py). The dynamic spectrum is constructed in [`psrism/dynamic_spectrum.py`](psrism/dynamic_spectrum.py), and the plot with attached time and frequency marginals is made in [`psrism/plot_dynamic_spectrum.py`](psrism/plot_dynamic_spectrum.py).
 
@@ -154,21 +152,21 @@ The autocorrelation spectrum measures how similar the dynamic spectrum is to its
 
 Following the Cordes/Lorimer-Kramer convention, the finite-lag covariance is:
 
-$$
+```math
 {\rm CF}(\Delta\nu,\Delta t)=
 \sum_{\nu=1}^{n_\nu-|\Delta\nu|}
 \sum_{t=1}^{n_t-|\Delta t|}
 E(\nu,t)\,
 E(\nu+\Delta\nu,t+\Delta t).
-$$
+```
 
 The normalized autocorrelation function is:
 
-$$
+```math
 {\rm ACF}(\Delta\nu,\Delta t)=
 \frac{{\rm CF}(\Delta\nu,\Delta t)}
 {{\rm CF}(0,0)}.
-$$
+```
 
 In the code, the mean dynamic-spectrum level is subtracted before computing the covariance. The calculation uses zero-padded linear correlation, not circular FFT autocorrelation. This is implemented in [`psrism/autocorrelation_spectrum.py`](psrism/autocorrelation_spectrum.py) by `calculate_covariance_function` and `calculate_autocorrelation_spectrum`. Plotting is handled in [`psrism/plot_autocorrelation_spectrum.py`](psrism/plot_autocorrelation_spectrum.py).
 
@@ -198,17 +196,17 @@ When `--acspec` is used, `psrism` also reports two quantities to the terminal.
 
 The decorrelation bandwidth is measured from the zero-time-lag frequency cut:
 
-$$
+```math
 \Delta\nu_{\rm DISS}:
 {\rm ACF}(\Delta\nu,0)=\frac{1}{2}.
-$$
+```
 
 The diffractive scintillation timescale is measured from the zero-frequency-lag time cut:
 
-$$
+```math
 \Delta t_{\rm DISS}:
 {\rm ACF}(0,\Delta t)=\frac{1}{e}.
-$$
+```
 
 This measurement is implemented in `measure_acf_scales` in [`psrism/autocorrelation_spectrum.py`](psrism/autocorrelation_spectrum.py). Terminal output is printed by the CLI in [`psrism/cli.py`](psrism/cli.py), for example:
 
@@ -224,24 +222,24 @@ The secondary spectrum is the squared magnitude of the two-dimensional Fourier t
 
 First the dynamic spectrum is mean-subtracted:
 
-$$
+```math
 E'(t,\nu)=E(t,\nu)-\langle E\rangle.
-$$
+```
 
 Then:
 
-$$
+```math
 S(f_t,f_\nu)=
 \left|
 {\cal F}_2\left\{E'(t,\nu)\right\}
 \right|^2.
-$$
+```
 
 For plotting, `psrism` uses:
 
-$$
+```math
 S_{\rm dB}=10\log_{10}\left(S+10^{-12}\right).
-$$
+```
 
 The FFT-shifted axes are made with `numpy.fft.fftfreq`. The x-axis is fringe frequency in Hz, and the y-axis is delay in seconds. The zero fringe-frequency row is set to zero before display.
 
@@ -278,7 +276,7 @@ Run:
 psrism ARCHIVE --intpf
 ```
 
-When `--intpf` is used, the integrated profile is fit with the scatter-broadened model described in the fitting section. The model is overlaid on the integrated-profile panel. The figure caption reports the fitted \( \tau \), its uncertainty, and unweighted fit-quality statistics.
+When `--intpf` is used, the integrated profile is fit with the scatter-broadened model described in the fitting section. The model is overlaid on the integrated-profile panel. The figure caption reports the fitted τ, its uncertainty, and unweighted fit-quality statistics.
 
 The plot is implemented in [`psrism/plot_dynamic_spectrum.py`](psrism/plot_dynamic_spectrum.py). The model fit is implemented in [`psrism/fit_tau.py`](psrism/fit_tau.py).
 
@@ -308,13 +306,13 @@ Integrated-profile tau fit:
 
 ## Fitting
 
-### Scattering Timescale \( \tau \)
+### Scattering Timescale τ
 
-The scattering timescale \( \tau \) describes the characteristic exponential pulse broadening caused by multipath propagation through the ionized interstellar medium. In `psrism`, the intrinsic pulse is approximated by a Gaussian and convolved with a one-sided exponential pulse broadening function.
+The scattering timescale τ describes the characteristic exponential pulse broadening caused by multipath propagation through the ionized interstellar medium. In `psrism`, the intrinsic pulse is approximated by a Gaussian and convolved with a one-sided exponential pulse broadening function.
 
 The analytic exponentially modified Gaussian model is:
 
-$$
+```math
 P(t)=
 A\frac{\sigma}{\tau}
 \sqrt{\frac{\pi}{2}}
@@ -327,9 +325,9 @@ A\frac{\sigma}{\tau}
 {\sigma\sqrt{2}}
 \right)
 \right].
-$$
+```
 
-The fitted parameters are \(A\), \(\mu\), \(\sigma\), and \(\tau\). The uncertainty on \( \tau \) is extracted from the covariance matrix returned by nonlinear least squares.
+The fitted parameters are `A`, `μ`, `σ`, and `τ`. The uncertainty on τ is extracted from the covariance matrix returned by nonlinear least squares.
 
 Implementation:
 
@@ -363,21 +361,21 @@ psrism ARCHIVE --fit-tau
 *_tau_fit.png
 ```
 
-### Scattering Spectral Index \( \alpha \)
+### Scattering Spectral Index α
 
 The frequency scaling of scattering is modeled as:
 
-$$
+```math
 \tau(\nu)=
 \tau_0
 \left(
 \frac{\nu}{\nu_0}
 \right)^\alpha.
-$$
+```
 
 In logarithmic form:
 
-$$
+```math
 \log_{10}\tau =
 \alpha
 \log_{10}
@@ -386,24 +384,24 @@ $$
 \right)
 +
 \log_{10}\tau_0.
-$$
+```
 
 For a single archive, `psrism` divides the full bandwidth into contiguous frequency subbands. The characteristic frequency of each subband is the central frequency of that subband:
 
-$$
+```math
 \nu_i =
 \frac{\nu_{\rm min,i}+\nu_{\rm max,i}}{2}.
-$$
+```
 
 Each subband profile is fit independently to obtain:
 
-$$
+```math
 (\tau_i,\sigma_{\tau_i}).
-$$
+```
 
 The weighted fit is done in log space:
 
-$$
+```math
 x_i =
 \log_{10}
 \left(
@@ -412,27 +410,27 @@ x_i =
 \qquad
 y_i =
 \log_{10}(\tau_i),
-$$
+```
 
 with propagated uncertainty:
 
-$$
+```math
 \sigma_{y_i} =
 \frac{\sigma_{\tau_i}}
 {\tau_i\ln 10}.
-$$
+```
 
 The fitted line is:
 
-$$
+```math
 y_i = \alpha x_i + b,
-$$
+```
 
 and:
 
-$$
+```math
 \tau_0 = 10^b.
-$$
+```
 
 Implementation:
 
@@ -454,7 +452,7 @@ Optional reference frequency:
 psrism ARCHIVE --fit-alpha --tau-subbands 4 --tau-reference-freq 150
 ```
 
-Terminal output includes subband \( \tau \) measurements and the fitted \( \alpha \):
+Terminal output includes subband τ measurements and the fitted α:
 
 ```text
 Subband tau fits:
@@ -472,7 +470,7 @@ This command saves:
 *_subband_tau_fits.png
 ```
 
-The \( \tau \)-versus-frequency plot also includes a comparison line with fixed \( \alpha=-4.4 \), normalized to the fitted \( \tau_0 \) at the same reference frequency.
+The τ-versus-frequency plot also includes a comparison line with fixed `α = -4.4`, normalized to the fitted `τ0` at the same reference frequency.
 
 ## Module Map
 

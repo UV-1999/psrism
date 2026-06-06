@@ -6,7 +6,12 @@ from pathlib import Path
 
 import numpy as np
 
-from .archive_io import frequency_phase_array, time_phase_array
+from .archive_io import (
+    frequency_phase_array,
+    integrated_profile_array,
+    integrated_profile_shift,
+    time_phase_array,
+)
 
 
 def plot_dynamic_spectrum(dynspec, metadata, output_path: str | None = None):
@@ -78,15 +83,16 @@ def plot_integrated_profile(
     import matplotlib.gridspec as gridspec
     import matplotlib.pyplot as plt
 
-    mat_time = time_phase_array(archive)
-    mat_freq = frequency_phase_array(archive)
+    phase_shift = integrated_profile_shift(archive)
+    mat_time = time_phase_array(archive, phase_shift=phase_shift)
+    mat_freq = frequency_phase_array(archive, phase_shift=phase_shift)
     nsub, nbin = mat_time.shape
     nchan = mat_freq.shape[0]
 
-    phase_axis = np.linspace(0, 1, nbin)
+    phase_axis = np.linspace(0.0, 1.0, nbin, endpoint=False)
     time_axis = np.arange(nsub) * (metadata.observation_time_s / nsub) / 60.0
     freq_axis = np.linspace(metadata.frequency_low_mhz, metadata.frequency_high_mhz, nchan)
-    prof_int = _normalise_profile(np.mean(mat_time, axis=0))
+    prof_int = integrated_profile_array(archive, center_peak=True)
 
     fig = plt.figure(figsize=(8.5, 9.2))
     gs = gridspec.GridSpec(3, 1, height_ratios=[1, 1, 1])

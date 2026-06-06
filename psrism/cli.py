@@ -158,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     integrated_tau_result = None
     if args.intpf or args.fit_tau:
         try:
-            integrated_tau_result = fit_tau_from_archive(archive)
+            integrated_tau_result = fit_tau_from_archive(archive, center_peak=True)
         except (RuntimeError, ValueError) as exc:
             print(f"psrism: error: integrated-profile tau fit failed: {exc}", file=sys.stderr)
             return 2
@@ -205,7 +205,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.fit_tau:
         if not args.intpf:
             _print_tau_result(integrated_tau_result, label="Integrated-profile tau fit")
-        profile = integrated_profile_array(archive)
+        profile = integrated_profile_array(archive, center_peak=True)
         plot_tau_fit(profile, integrated_tau_result, output_path=f"{metadata.outname}_tau_fit.png")
 
     if args.fit_alpha:
