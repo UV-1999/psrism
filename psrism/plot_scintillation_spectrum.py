@@ -13,6 +13,7 @@ def plot_scintillation_spectrum(
     delay,
     title: str | None = None,
     output_path: str | None = None,
+    arc_fit_result=None,
 ):
     import matplotlib.pyplot as plt
 
@@ -45,6 +46,8 @@ def plot_scintillation_spectrum(
         aspect="auto",
         cmap="afmhot",
     )
+    if arc_fit_result is not None:
+        _plot_arc_overlay(ax_main, fringe_frequency, delay, arc_fit_result)
     ax_main.set_xlabel("Fringe frequency (Hz)")
     ax_main.set_ylabel("Delay (s)")
     if title:
@@ -63,3 +66,31 @@ def plot_scintillation_spectrum(
     if output_path:
         fig.savefig(output_path, bbox_inches="tight")
     return fig
+
+
+def _plot_arc_overlay(ax, fringe_frequency, delay, arc_fit_result) -> None:
+    fringe_frequency = np.asarray(fringe_frequency, dtype=float)
+    delay = np.asarray(delay, dtype=float)
+    fringe = np.linspace(fringe_frequency.min(), fringe_frequency.max(), 800)
+    branches = []
+    if arc_fit_result.half in {"positive", "both"}:
+        branches.append(
+            arc_fit_result.delay_offset
+            + abs(arc_fit_result.curvature) * (fringe - arc_fit_result.fringe_offset) ** 2
+        )
+    if arc_fit_result.half in {"negative", "both"}:
+        branches.append(
+            arc_fit_result.delay_offset
+            - abs(arc_fit_result.curvature) * (fringe - arc_fit_result.fringe_offset) ** 2
+        )
+
+    for branch in branches:
+        valid = (branch >= delay.min()) & (branch <= delay.max())
+        if np.any(valid):
+            ax.plot(
+                fringe[valid],
+                branch[valid],
+                color="cyan",
+                linestyle="--",
+                linewidth=1.2,
+            )

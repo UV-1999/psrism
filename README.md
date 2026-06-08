@@ -177,6 +177,7 @@ calculate_covariance_function
 calculate_autocorrelation_spectrum
 autocorrelation_axes
 measure_acf_scales
+fit_autocorrelation_spectrum
 plot_autocorrelation_spectrum
 ```
 
@@ -186,10 +187,24 @@ Run:
 psrism ARCHIVE --acspec
 ```
 
+This saves the full unzoomed lag window. To make the fitted central ellipse easier to inspect, use:
+
+```bash
+psrism ARCHIVE --acspec --zoom-acf
+```
+
+The zoomed view keeps the coordinate axes and fit overlays, but crops the heatmap around the fitted central ACF lobe.
+
 The output file is:
 
 ```text
 *_acspec.png
+```
+
+For `--acspec --zoom-acf`, the output file is:
+
+```text
+*_acspec_zoom.png
 ```
 
 When `--acspec` is used, `psrism` also reports two quantities to the terminal.
@@ -214,6 +229,68 @@ This measurement is implemented in `measure_acf_scales` in [`psrism/autocorrelat
 ACF decorrelation measurements:
  decorrelation bandwidth = 0.42 MHz
  diffractive timescale = 185 s
+```
+
+#### Tilted ACF and Scintle Drift
+
+In an ideal stationary diffractive scintillation pattern, the central ACF lobe is roughly elliptical and aligned with the time-lag and frequency-lag axes. A tilted central ellipse means that scintillation maxima at one frequency are correlated with maxima at another frequency after a shifted time lag. This is usually interpreted as frequency drift of scintles caused by large-scale refractive phase gradients in the ionized interstellar medium.
+
+The physical picture is that a refractive phase gradient displaces the apparent scattered image. Because the displacement is chromatic, the diffraction pattern shifts with observing frequency. If this shift has a component parallel to the effective transverse velocity, the dynamic spectrum shows tilted scintillation bands and the ACF becomes skewed. This interpretation is discussed in classic scintillation-drift work such as Smith & Wright (1985) and Gupta, Rickett & Lyne (1994).
+
+When `--acspec` is used, `psrism` fits the central ACF lobe with a tilted elliptical Gaussian:
+
+```math
+C(\Delta t,\Delta\nu)=
+C_{\rm bg}
++
+C_0
+\exp\left[
+-
+\left(
+a\Delta t^2
++
+b\Delta t\Delta\nu
++
+c\Delta\nu^2
+\right)
+\right].
+```
+
+The fitted ridge of maximum correlation satisfies:
+
+```math
+\frac{d\Delta t}{d\Delta\nu}
+=
+-
+\frac{b}{2a}.
+```
+
+This slope is reported as the scintle drift slope in seconds per MHz. The inverse slope is also printed as MHz per second. The same fit gives model-based coordinate-axis estimates of the diffractive timescale and decorrelation bandwidth:
+
+```math
+\Delta t_{\rm DISS,fit}
+=
+\frac{1}{\sqrt{a}},
+\qquad
+\Delta\nu_{\rm DISS,fit}
+=
+\sqrt{\frac{\ln 2}{c}}.
+```
+
+The implementation is in [`psrism/fit_autocorrelation_spectrum.py`](psrism/fit_autocorrelation_spectrum.py). The fit uses a bounded correlation-coefficient parameterization so the fitted ellipse remains positive definite, then converts the result to the quadratic coefficients `a`, `b`, and `c`. [`psrism/plot_autocorrelation_spectrum.py`](psrism/plot_autocorrelation_spectrum.py) overlays the fitted half-power contour and the drift ridge on the ACF plot.
+
+The terminal output includes:
+
+```text
+Tilted ACF Gaussian fit:
+ fit decorrelation bandwidth = ... MHz
+ fit diffractive timescale = ... s
+ correlation coefficient = ...
+ ellipse rotation angle = ... deg
+ scintle drift slope d(time lag)/d(freq lag) = ... s/MHz
+ inverse drift rate d(freq lag)/d(time lag) = ... MHz/s
+ quadratic coefficients: a=..., b=..., c=...
+ goodness: unweighted reduced chi-square = ..., RMS residual = ..., fit points = ...
 ```
 
 ### Secondary Spectrum
@@ -241,7 +318,7 @@ For plotting, `psrism` uses:
 S_{\rm dB}=10\log_{10}\left(S+10^{-12}\right).
 ```
 
-The FFT-shifted axes are made with `numpy.fft.fftfreq`. The x-axis is fringe frequency in Hz, and the y-axis is delay in seconds. The zero fringe-frequency row is set to zero before display.
+The FFT-shifted axes are made with `numpy.fft.fftfreq`. The x-axis is fringe frequency in Hz. The y-axis is delay in seconds because the frequency-channel spacing is converted from MHz to Hz before building the Fourier-conjugate axis. The zero fringe-frequency row is set to zero before display and arc fitting.
 
 The calculation is implemented in [`psrism/scintillation_spectrum.py`](psrism/scintillation_spectrum.py), and plotting with attached marginals is implemented in [`psrism/plot_scintillation_spectrum.py`](psrism/plot_scintillation_spectrum.py).
 
@@ -249,6 +326,7 @@ Relevant functions:
 
 ```text
 calculate_scintillation_spectrum
+fit_parabolic_arc
 plot_scintillation_spectrum
 ```
 
@@ -262,6 +340,131 @@ The output file is:
 
 ```text
 *_sspec.png
+```
+
+#### Parabolic Arc Fitting
+
+Secondary spectra often show parabolic scintillation arcs because the dynamic spectrum is produced by interference between scattered paths. For a thin scattering screen, a path scattered by angle `θ` has a differential geometric delay that scales approximately as:
+
+```math
+\tau_{\rm d}
+\propto
+\theta^2,
+```
+
+while the Doppler or fringe frequency scales approximately as:
+
+```math
+f_{\rm D}
+\propto
+\theta.
+```
+
+Eliminating `θ` gives the parabolic arc relation:
+
+```math
+\tau_{\rm d}
+=
+\eta f_{\rm D}^2.
+```
+
+The curvature `η` is the fitted observable. In a simple thin-screen geometry it is related to effective distance, observing wavelength, and effective transverse velocity by:
+
+```math
+\eta
+=
+\frac{
+D_{\rm eff}\lambda^2
+}{
+2cV_{\rm eff,\parallel}^2
+}.
+```
+
+This relation is physically useful, but it is model-dependent: anisotropy, multiple screens, screen motion, or extended scattering material can change the interpretation of `η`. Parabolic arcs and arclets are discussed in Stinebring et al. (2001), Walker et al. (2004), and Cordes et al. (2006).
+
+In `psrism`, arc fitting is requested with:
+
+```bash
+psrism ARCHIVE --sspec --fit-arc
+```
+
+The fitted model is:
+
+```math
+\tau_{\rm d}
+-
+\tau_0
+=
+\eta
+\left(
+f_{\rm D}
+-
+f_{{\rm D},0}
+\right)^2.
+```
+
+By default, the apex offsets are zero:
+
+```math
+f_{{\rm D},0}=0,
+\qquad
+\tau_0=0.
+```
+
+Explicit offsets can be supplied when testing offset arclets or lens-like structures:
+
+```bash
+psrism ARCHIVE --sspec --fit-arc \
+  --arc-fringe-offset 0.002 \
+  --arc-delay-offset 1e-6
+```
+
+The code uses an arc-strength search, similar in spirit to a Hough transform. For each trial curvature, it samples the linear secondary-spectrum power along the parabola and computes:
+
+```math
+A(\eta)
+=
+\frac{1}{N_\eta}
+\sum_{i=1}^{N_\eta}
+S_2
+\left[
+f_{{\rm D},i},
+\tau_0
++
+\eta
+\left(
+f_{{\rm D},i}
+-
+f_{{\rm D},0}
+\right)^2
+\right].
+```
+
+The best curvature is the trial that maximizes `A(η)`. The uncertainty is estimated from the half-maximum width of the arc-strength curve above its median baseline. The central DC spike and axis leakage are masked before scoring.
+
+Useful options are:
+
+```bash
+psrism ARCHIVE --sspec --fit-arc --arc-half positive
+psrism ARCHIVE --sspec --fit-arc --arc-half both
+psrism ARCHIVE --sspec --fit-arc --arc-curvature-trials 400
+psrism ARCHIVE --sspec --fit-arc --arc-curvature-min 1e-3 --arc-curvature-max 1e2
+psrism ARCHIVE --sspec --fit-arc --arc-mask-bins 4
+```
+
+The implementation is in [`psrism/fit_secondary_spectrum.py`](psrism/fit_secondary_spectrum.py). The secondary-spectrum plot overlays the fitted parabola when `--sspec` and `--fit-arc` are used together.
+
+Terminal output includes:
+
+```text
+Parabolic arc fit:
+ delay half searched = positive
+ apex fringe-frequency offset = 0 Hz
+ apex delay offset = 0 s
+ curvature eta = ... +/- ... s^3
+ arc strength = ...
+ arc strength S/N = ...
+ samples on best arc = ...
 ```
 
 ### Integrated Profile
@@ -484,6 +687,7 @@ psrism/autocorrelation_spectrum.py         Autocorrelation-spectrum calculation
 psrism/plot_autocorrelation_spectrum.py    Autocorrelation-spectrum plotting
 psrism/scintillation_spectrum.py           Secondary-spectrum calculation
 psrism/plot_scintillation_spectrum.py      Secondary-spectrum plotting
+psrism/fit_secondary_spectrum.py           Parabolic-arc fitting
 psrism/fit_tau.py                          Scattered-pulse model and τ fitting
 psrism/fit_alpha.py                        Frequency-scaling fit for α
 psrism/plot_tau_vs_freq.py                 τ-versus-frequency plotting

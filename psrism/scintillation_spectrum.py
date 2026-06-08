@@ -16,13 +16,13 @@ def calculate_scintillation_spectrum(
     arr = arr - np.mean(arr)
     nsub, nchan = arr.shape
     dt = observation_time_s / nsub
-    df = bandwidth_mhz / nchan
+    df_hz = abs(bandwidth_mhz) * 1e6 / nchan
 
     spectrum = np.fft.fftshift(np.abs(np.fft.fft2(arr)) ** 2)
     if log_scale:
         spectrum = 10 * np.log10(spectrum + 1e-12)
 
     fringe_frequency = np.fft.fftshift(np.fft.fftfreq(nsub, d=dt))
-    delay = np.fft.fftshift(np.fft.fftfreq(nchan, d=df))
+    delay = np.fft.fftshift(np.fft.fftfreq(nchan, d=df_hz))
     spectrum[nsub // 2, :] = 0
     return spectrum, fringe_frequency, delay

@@ -25,6 +25,8 @@ Purpose: extract ISM related parameters from pulsar data.
     group_plot.add_argument("--intpf", action="store_true", help="plot integrated pulse profile")
     group_plot.add_argument("--fit-tau", action="store_true", help="fit tau from the integrated profile")
     group_plot.add_argument("--fit-alpha", action="store_true", help="fit tau per subband and alpha")
+    group_plot.add_argument("--fit-arc", action="store_true", help="fit a parabolic arc in the secondary spectrum")
+    group_plot.add_argument("--zoom-acf", action="store_true", help="crop the ACF plot around the fitted central ellipse")
     group_plot.add_argument("--inspect", action="store_true", help="show archive dimensions and valid scrunch targets")
 
     group_meta = parser.add_argument_group("Processing options")
@@ -46,6 +48,46 @@ Purpose: extract ISM related parameters from pulsar data.
         "--tau-reference-freq",
         type=float,
         help="reference frequency in MHz for tau-frequency alpha fit",
+    )
+    group_meta.add_argument(
+        "--arc-curvature-min",
+        type=float,
+        help="minimum parabolic-arc curvature magnitude in s^3 for --fit-arc",
+    )
+    group_meta.add_argument(
+        "--arc-curvature-max",
+        type=float,
+        help="maximum parabolic-arc curvature magnitude in s^3 for --fit-arc",
+    )
+    group_meta.add_argument(
+        "--arc-curvature-trials",
+        type=int,
+        default=200,
+        help="number of trial parabolic-arc curvatures for --fit-arc",
+    )
+    group_meta.add_argument(
+        "--arc-half",
+        choices=["positive", "negative", "both"],
+        default="positive",
+        help="secondary-spectrum delay half to search for parabolic arcs",
+    )
+    group_meta.add_argument(
+        "--arc-fringe-offset",
+        type=float,
+        default=0.0,
+        help="parabolic-arc apex fringe-frequency offset in Hz",
+    )
+    group_meta.add_argument(
+        "--arc-delay-offset",
+        type=float,
+        default=0.0,
+        help="parabolic-arc apex delay offset in seconds",
+    )
+    group_meta.add_argument(
+        "--arc-mask-bins",
+        type=int,
+        default=2,
+        help="number of central axis bins to mask during --fit-arc",
     )
     return parser
 
@@ -108,6 +150,8 @@ def main(argv: list[str] | None = None) -> int:
         plot_subband_tau_fits,
         plot_tau_fit,
     )
+    from .fit_autocorrelation_spectrum import fit_autocorrelation_spectrum
+    from .fit_secondary_spectrum import fit_parabolic_arc
     from .plot_autocorrelation_spectrum import plot_autocorrelation_spectrum
     from .plot_dynamic_spectrum import plot_dynamic_spectrum, plot_integrated_profile
     from .plot_scintillation_spectrum import plot_scintillation_spectrum
@@ -146,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
     _print_metadata(metadata)
 
     dynspec = None
-    needs_dynspec = args.dspec or args.acspec or args.sspec
+    needs_dynspec = args.dspec or args.acspec or args.sspec or args.fit_arc
     if needs_dynspec:
         dynspec = calculate_dynamic_spectrum(
             archive,
@@ -186,7 +230,45 @@ def main(argv: list[str] | None = None) -> int:
         )
         scales = measure_acf_scales(acf2d, time_lag, freq_lag)
         _print_acf_scales(scales)
-        plot_autocorrelation_spectrum(acf2d, metadata, output_path=f"{metadata.outname}_acspec.png")
+        acf_fit_result = None
+        try:
+            acf_fit_result = fit_autocorrelation_spectrum(acf2d, time_lag, freq_lag)
+            _print_acf_tilt_fit(acf_fit_result)
+        except (RuntimeError, ValueError) as exc:
+            print(f"psrism: warning: tilted ACF fit failed: {exc}", file=sys.stderr)
+        plot_autocorrelation_spectrum(
+            acf2d,
+            metadata,
+            output_path=f"{metadata.outname}_acspec{'_zoom' if args.zoom_acf else ''}.png",
+            acf_fit_result=acf_fit_result,
+            zoom_fit=args.zoom_acf,
+        )
+
+    arc_fit_result = None
+    if args.fit_arc and dynspec is not None:
+        spectrum_linear, fringe_frequency, delay = calculate_scintillation_spectrum(
+            dynspec,
+            metadata.observation_time_s,
+            metadata.bandwidth_mhz,
+            log_scale=False,
+        )
+        try:
+            arc_fit_result = fit_parabolic_arc(
+                spectrum_linear,
+                fringe_frequency,
+                delay,
+                curvature_min=args.arc_curvature_min,
+                curvature_max=args.arc_curvature_max,
+                n_trials=args.arc_curvature_trials,
+                half=args.arc_half,
+                mask_bins=args.arc_mask_bins,
+                fringe_offset=args.arc_fringe_offset,
+                delay_offset=args.arc_delay_offset,
+            )
+            _print_arc_fit(arc_fit_result)
+        except (RuntimeError, ValueError) as exc:
+            print(f"psrism: error: parabolic arc fit failed: {exc}", file=sys.stderr)
+            return 2
 
     if args.sspec and dynspec is not None:
         spectrum, fringe_frequency, delay = calculate_scintillation_spectrum(
@@ -200,6 +282,7 @@ def main(argv: list[str] | None = None) -> int:
             delay,
             title=metadata.filename,
             output_path=f"{metadata.outname}_sspec.png",
+            arc_fit_result=arc_fit_result,
         )
 
     if args.fit_tau:
@@ -276,6 +359,45 @@ def _print_acf_scales(scales) -> None:
         print(" diffractive timescale: unavailable")
     else:
         print(f" diffractive timescale = {scales.diffractive_timescale_s:.6g} s")
+
+
+def _print_acf_tilt_fit(result) -> None:
+    print("\nTilted ACF Gaussian fit:")
+    print(f" fit decorrelation bandwidth = {result.delta_f_diss:.6g} MHz")
+    print(f" fit diffractive timescale = {result.delta_t_diss:.6g} s")
+    print(f" correlation coefficient = {result.correlation:.6g}")
+    print(f" ellipse rotation angle = {result.rotation_angle_deg:.6g} deg")
+    slope = result.drift_slope_s_per_mhz
+    rate = result.drift_rate_mhz_per_s
+    if slope is None:
+        print(" scintle drift slope d(time lag)/d(freq lag): unavailable")
+    else:
+        print(f" scintle drift slope d(time lag)/d(freq lag) = {slope:.6g} s/MHz")
+    if rate is not None:
+        print(f" inverse drift rate d(freq lag)/d(time lag) = {rate:.6g} MHz/s")
+    print(
+        " quadratic coefficients: "
+        f"a={result.a:.6g}, b={result.b:.6g}, c={result.c:.6g}"
+    )
+    print(
+        f" goodness: unweighted reduced chi-square = {_format_optional_float(result.reduced_chi_square)}, "
+        f"RMS residual = {_format_optional_float(result.rms_residual)}, "
+        f"fit points = {result.n_fit_points}"
+    )
+
+
+def _print_arc_fit(result) -> None:
+    print("\nParabolic arc fit:")
+    print(f" delay half searched = {result.half}")
+    print(f" apex fringe-frequency offset = {result.fringe_offset:.6g} Hz")
+    print(f" apex delay offset = {result.delay_offset:.6g} s")
+    print(
+        f" curvature eta = {result.curvature:.6e} "
+        f"+/- {_format_optional_float(result.curvature_error)} s^3"
+    )
+    print(f" arc strength = {result.score:.6g}")
+    print(f" arc strength S/N = {_format_optional_float(result.score_snr)}")
+    print(f" samples on best arc = {result.n_samples}")
 
 
 def _format_optional_float(value) -> str:
