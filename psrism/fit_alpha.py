@@ -16,6 +16,11 @@ class AlphaFitResult:
     reference_freq_mhz: float
     intercept: float
     intercept_error: float
+    chi_square: float
+    reduced_chi_square: float | None
+    dof: int
+    rms_log_residual: float
+    n_points: int
 
 
 def tau_power_law(freq_mhz, tau0, alpha, reference_freq_mhz=1000.0):
@@ -54,11 +59,14 @@ def fit_alpha(freq_mhz, tau, tau_error=None, reference_freq_mhz: float = 1000.0)
     normal_matrix = design.T @ (weights[:, np.newaxis] * design)
     covariance = np.linalg.inv(normal_matrix)
     coeffs = covariance @ (design.T @ (weights * y))
+    residual = y - design @ coeffs
+    chi_square = float(np.sum((residual / sigma_y) ** 2))
+    dof = max(len(y) - 2, 0)
+    reduced_chi_square = float(chi_square / dof) if dof > 0 else None
+    rms_log_residual = float(np.sqrt(np.mean(residual**2)))
 
     if errors is None and len(y) > 2:
-        residual = y - design @ coeffs
-        reduced_chi2 = float(np.sum(residual**2) / (len(y) - 2))
-        covariance = covariance * reduced_chi2
+        covariance = covariance * reduced_chi_square
 
     alpha = float(coeffs[0])
     intercept = float(coeffs[1])
@@ -75,4 +83,9 @@ def fit_alpha(freq_mhz, tau, tau_error=None, reference_freq_mhz: float = 1000.0)
         reference_freq_mhz=reference_freq_mhz,
         intercept=intercept,
         intercept_error=intercept_error,
+        chi_square=chi_square,
+        reduced_chi_square=reduced_chi_square,
+        dof=dof,
+        rms_log_residual=rms_log_residual,
+        n_points=int(len(y)),
     )

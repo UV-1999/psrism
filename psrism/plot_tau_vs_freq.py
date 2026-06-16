@@ -52,7 +52,25 @@ def plot_tau_vs_frequency(
     ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
     ax.xaxis.set_minor_formatter(NullFormatter())
     ax.legend()
-    fig.tight_layout()
+    if alpha_result is not None:
+        caption = (
+            "Power-law fit goodness: "
+            f"weighted χ²={alpha_result.chi_square:.4g}, "
+            f"red. χ²={_format_optional_float(alpha_result.reduced_chi_square)}, "
+            f"dof={alpha_result.dof}, "
+            f"RMS log10 residual={alpha_result.rms_log_residual:.4g}, "
+            f"N={alpha_result.n_points}"
+        )
+        fig.text(0.5, 0.02, caption, ha="center", va="bottom", fontsize=9, wrap=True)
+        fig.tight_layout(rect=(0, 0.07, 1, 1))
+    else:
+        fig.tight_layout()
     if output_path:
         fig.savefig(output_path, dpi=150)
     return fig
+
+
+def _format_optional_float(value: float | None) -> str:
+    if value is None or not np.isfinite(value):
+        return "n/a"
+    return f"{value:.4g}"

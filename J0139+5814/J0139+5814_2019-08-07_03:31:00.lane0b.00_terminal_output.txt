@@ -1,0 +1,30 @@
+
+Run Setup
+  Loaded archive: /home/piyushmarmat/old/Data/J0139+5814/J0139+5814_2019-08-07_03:31:00.lane0b.00.nop
+  Output directory: /home/piyushmarmat/old/psrism_package/J0139+5814
+  Terminal output log: /home/piyushmarmat/old/psrism_package/J0139+5814/J0139+5814_2019-08-07_03:31:00.lane0b.00_terminal_output.txt
+
+Original Data Shape
+  Axis 0: Nsub (time) = 1050
+  Axis 1: Npol = 1
+  Axis 2: Nchan (freq) = 366
+  Axis 3: Nbin (phase) = 1024
+
+Observation Metadata
+  Observation time: 10499.742 s (174.996 min or 2.917 hour(s))
+  Centre frequency: 153.809 MHz
+  Bandwidth: 71.484 MHz
+  Frequency range: 118.066 MHz to 189.551 MHz
+  DM: 73.778999 pc cm^-3
+  Telescope used: DE601HBA
+
+Processed Data Shape
+  Axis 0: Nsub (time) = 1050
+  Axis 1: Npol = 1
+  Axis 2: Nchan (freq) = 366
+  Axis 3: Nbin (phase) = 1024
+
+Valid Scrunch Targets Smaller Than Current Dimensions
+  --nsub  current 1050: 1, 2, 3, 5, 6, 7, 10, 14, 70, 75, 105, 150, 175, 210, 350, 525 ... (23 total smaller divisors)
+  --nchan current 366: 1, 2, 3, 6, 61, 122, 183
+  --nbin  current 1024: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512

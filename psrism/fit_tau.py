@@ -238,16 +238,19 @@ def plot_subband_tau_fits(
     result: ScatteringSpectralIndexResult,
     title: str | None = None,
     output_path: str | None = None,
+    nrows: int | None = None,
+    ncols: int | None = None,
 ):
     """Plot observed subband profiles with fitted scattered-pulse overlays."""
     import matplotlib.pyplot as plt
 
     subbands = sorted(result.subbands, key=lambda item: item.frequency_mhz)
     nplots = len(subbands)
+    nrows, ncols = _subplot_grid(nplots, nrows=nrows, ncols=ncols)
     fig, axes = plt.subplots(
-        nplots,
-        1,
-        figsize=(8.5, max(3.0 * nplots, 4.5)),
+        nrows,
+        ncols,
+        figsize=(4.4 * ncols, 2.8 * nrows),
         sharex=True,
         squeeze=False,
     )
@@ -281,7 +284,11 @@ def plot_subband_tau_fits(
         )
         ax.legend(loc="best", fontsize=8)
 
-    axes[-1, 0].set_xlabel("Pulse phase")
+    for ax in axes.ravel()[nplots:]:
+        ax.axis("off")
+    for ax in axes[-1, :]:
+        if ax.has_data():
+            ax.set_xlabel("Pulse phase")
     fit_quality = "; ".join(_subband_fit_caption(item) for item in subbands)
     fig.text(
         0.5,
@@ -299,6 +306,28 @@ def plot_subband_tau_fits(
     if output_path:
         fig.savefig(output_path, dpi=150)
     return fig
+
+
+def _subplot_grid(nplots: int, nrows: int | None = None, ncols: int | None = None) -> tuple[int, int]:
+    if nplots <= 0:
+        return 1, 1
+    if nrows is not None and nrows <= 0:
+        raise ValueError("subband plot rows must be positive")
+    if ncols is not None and ncols <= 0:
+        raise ValueError("subband plot columns must be positive")
+    if nrows is None and ncols is None:
+        ncols = int(np.ceil(np.sqrt(nplots)))
+        nrows = int(np.ceil(nplots / ncols))
+    elif nrows is None:
+        nrows = int(np.ceil(nplots / ncols))
+    elif ncols is None:
+        ncols = int(np.ceil(nplots / nrows))
+    if nrows * ncols < nplots:
+        raise ValueError(
+            f"subband plot grid {nrows}x{ncols} has {nrows * ncols} panels for {nplots} subbands"
+        )
+    nrows = min(nrows, int(np.ceil(nplots / ncols)))
+    return int(nrows), int(ncols)
 
 
 def _normalise_profile(profile) -> np.ndarray:
