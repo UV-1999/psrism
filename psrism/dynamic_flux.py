@@ -7,6 +7,8 @@ import numpy as np
 
 def single_pulse_window(archive, width_factor: int = 10) -> tuple[int, int]:
     """Find a centered on-pulse window for a single-peaked pulse."""
+    # PSRISM choice: 1/width_factor of the peak defines the automatic window;
+    # the bundled references do not prescribe this threshold.
     temp = archive.clone()
     temp.tscrunch()
     temp.fscrunch()
@@ -64,6 +66,8 @@ def _safe_offpulse_indices(nbin: int, windows: list[tuple[int, int]]) -> np.ndar
 
 def fluxes_single_peak(archive, left_edge: int, right_edge: int) -> np.ndarray:
     """Calculate noise-normalized fluxes for a single-pulse dynamic spectrum."""
+    # Reference: Lorimer & Kramer (2005), psrhandbook.pdf, Section 7.4.4.1,
+    # constructs E(f,t) from pulse area after subtracting off-pulse emission.
     temp = archive.clone()
     temp.remove_baseline()
     temp.centre_max_bin()
@@ -77,17 +81,23 @@ def fluxes_single_peak(archive, left_edge: int, right_edge: int) -> np.ndarray:
     xon = np.arange(w0, w1 + 1)
     xoff = _safe_offpulse_indices(nbin, [(w0, w1)])
 
-    dynspec = np.zeros((nsub, nchan))
+    dynspec = np.full((nsub, nchan), np.nan, dtype=float)
     for isub in range(nsub):
         sub = temp[isub]
         for ichan in range(nchan):
+            if not np.isfinite(sub.get_weight(ichan)) or sub.get_weight(ichan) <= 0:
+                continue
             prof = np.asarray(sub.get_Profile(0, ichan).get_amps(), dtype=float)
             yoff = prof[xoff]
             std = np.std(yoff)
-            if std == 0:
+            if not np.isfinite(std) or std <= 0:
                 continue
+            # PSRISM choice: normalize by off-pulse RMS and clip negative
+            # integrated values; the Handbook defines relative pulse energy.
             cal = (prof[xon] - np.mean(yoff)) / std
-            dynspec[isub, ichan] = max(np.trapezoid(cal) / len(cal), 0)
+            flux = np.trapezoid(cal) / len(cal)
+            if np.isfinite(flux):
+                dynspec[isub, ichan] = max(flux, 0)
 
     return dynspec
 
@@ -100,13 +110,16 @@ def fluxes_two_peak(
     right_inter: int,
 ) -> np.ndarray:
     """Calculate noise-normalized fluxes for an interpulse dynamic spectrum."""
+    # Reference: Lorimer & Kramer (2005), psrhandbook.pdf, Section 7.4.4.1,
+    # for on-pulse integration and off-pulse subtraction. The two-window
+    # extension and RMS normalization are PSRISM implementation choices.
     temp = archive.clone()
     temp.remove_baseline()
 
     nsub = temp.get_nsubint()
     nchan = temp.get_nchan()
     nbin = temp.get_nbin()
-    dynspec = np.zeros((nsub, nchan))
+    dynspec = np.full((nsub, nchan), np.nan, dtype=float)
 
     xon1 = np.arange(max(0, left_main), min(nbin - 1, right_main) + 1)
     xon2 = np.arange(max(0, left_inter), min(nbin - 1, right_inter) + 1)
@@ -115,19 +128,20 @@ def fluxes_two_peak(
     for isub in range(nsub):
         sub = temp[isub]
         for ichan in range(nchan):
+            if not np.isfinite(sub.get_weight(ichan)) or sub.get_weight(ichan) <= 0:
+                continue
             prof_obj = sub.get_Profile(0, ichan)
             prof = np.asarray(prof_obj.get_amps(), dtype=float)
             prof = np.roll(prof, (nbin // 4) - prof_obj.find_max_bin())
             yoff = prof[xoff]
             std = np.std(yoff)
-            if std == 0:
+            if not np.isfinite(std) or std <= 0:
                 continue
             mean = np.mean(yoff)
             cal1 = (prof[xon1] - mean) / std
             cal2 = (prof[xon2] - mean) / std
-            dynspec[isub, ichan] = max(
-                (np.trapezoid(cal1) + np.trapezoid(cal2)) / (len(cal1) + len(cal2)),
-                0,
-            )
+            flux = (np.trapezoid(cal1) + np.trapezoid(cal2)) / (len(cal1) + len(cal2))
+            if np.isfinite(flux):
+                dynspec[isub, ichan] = max(flux, 0)
 
     return dynspec

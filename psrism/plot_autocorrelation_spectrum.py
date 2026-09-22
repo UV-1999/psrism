@@ -67,6 +67,8 @@ def plot_autocorrelation_spectrum(
         from .fit_autocorrelation_spectrum import evaluate_acf_fit
 
         model = evaluate_acf_fit(acf_fit_result, time_lag, freq_lag)
+        # Reference: Lorimer & Kramer (2005), psrhandbook.pdf, Section
+        # 7.4.4.1, defines Delta_nu_DISS at the ACF half-maximum.
         contour_level = acf_fit_result.offset + 0.5 * acf_fit_result.amplitude
         ax_main.contour(
             time_lag,
@@ -124,6 +126,8 @@ def _acf_zoom_limits(time_lag, freq_lag, acf_fit_result) -> tuple[tuple[float, f
 
 def _zoom_half_span(width: float, axis: np.ndarray) -> float:
     """Choose a window where the fitted half width takes about 50 percent."""
+    # PSRISM display choice: show two measured half-widths, with a minimum of
+    # three samples; these factors do not change the fitted ACF quantities.
     step = _axis_step(axis)
     if not np.isfinite(width) or width <= 0:
         return float(np.nanmax(np.abs(axis)))

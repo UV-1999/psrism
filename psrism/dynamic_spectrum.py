@@ -33,9 +33,18 @@ def calculate_dynamic_spectrum(
 
 def normalize_dynamic_spectrum(dynspec: np.ndarray) -> np.ndarray:
     """Remove mean bandpass and normalize by global standard deviation."""
+    # PSRISM choice: this optional normalization is an implementation
+    # transform, not the dynamic-spectrum definition in Handbook 7.4.4.1.
     arr = np.asarray(dynspec, dtype=float).copy()
-    arr -= np.mean(arr, axis=0, keepdims=True)
-    std = np.std(arr)
-    if std != 0:
+    if not np.any(np.isfinite(arr)):
+        raise ValueError("dynspec has no finite samples to normalize")
+    finite = np.isfinite(arr)
+    count = np.sum(finite, axis=0)
+    total = np.sum(np.where(finite, arr, 0.0), axis=0)
+    bandpass = np.full(arr.shape[1], np.nan, dtype=float)
+    np.divide(total, count, out=bandpass, where=count > 0)
+    arr -= bandpass[np.newaxis, :]
+    std = np.nanstd(arr)
+    if np.isfinite(std) and std > 0:
         arr /= std
     return arr

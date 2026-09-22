@@ -46,9 +46,14 @@ def preprocess_archive(
     nbin: Optional[int] = None,
 ):
     """Dedisperse, pscrunch, and optionally scrunch an archive in place."""
-    if dm is not None and dm > 0.0:
-        archive.set_dispersion_measure(dm)
+    if dm is not None:
+        dm_value = float(dm)
+        if not np.isfinite(dm_value) or dm_value < 0.0:
+            raise ValueError("--dm must be finite and nonnegative")
+        archive.set_dispersion_measure(dm_value)
 
+    # Reference: Lorimer & Kramer (2005), psrhandbook.pdf, Section 4.1.1,
+    # for the frequency-dependent cold-plasma delay removed by dedispersion.
     archive.dedisperse()
     archive.pscrunch()
 
@@ -153,12 +158,16 @@ def integrated_profile_array(
     normalize: bool = True,
     center_peak: bool = False,
     target_bin_fraction: float = 0.25,
+    remove_baseline: bool = True,
 ) -> np.ndarray:
-    """Return a baseline-removed integrated pulse profile."""
+    """Return an integrated pulse profile with configurable baseline removal."""
+    # PSRISM choice: when centering is requested, one quarter of the rotation
+    # is reserved before the peak to leave room for the scattering tail.
     temp = archive.clone()
     temp.tscrunch()
     temp.fscrunch()
-    temp.remove_baseline()
+    if remove_baseline:
+        temp.remove_baseline()
 
     profile_obj = temp[0].get_Profile(0, 0)
     profile = np.asarray(profile_obj.get_amps(), dtype=float)
@@ -175,6 +184,8 @@ def integrated_profile_array(
 
 def integrated_profile_shift(archive, target_bin_fraction: float = 0.25) -> int:
     """Return the shift that centers the integrated-profile peak at target phase."""
+    # PSRISM choice: place the profile peak at one quarter of the rotation to
+    # leave room for a visible scattering tail; this is not a literature value.
     temp = archive.clone()
     temp.tscrunch()
     temp.fscrunch()

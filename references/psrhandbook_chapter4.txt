@@ -1,0 +1,542 @@
+Effects of the interstellar medium
+
+In Chapters 1 and 2 we saw that the pulsar signal is affected in a number of ways (frequency dispersion, Faraday rotation, scintillation and scattering) as it propagates through the interstellar medium (ISM). This chapter presents the basic theoretical background in those areas necessary for planning and interpreting observations. We begin with a discussion of dispersion and Faraday rotation which can be understood by propagation through a homogeneous medium. Then we move on to describe scattering and scintillation effects caused by propagation through a more realistic model of the ISM which includes turbulence on a variety of length scales. As essentially perfect point sources, pulsars show scintillation effects that are absent in extended radio sources for the same reason that "stars twinkle, and planets do not". This has a number of important observational consequences that we discuss in detail.
+
+4.1 Propagation through a homogeneous medium
+
+The ISM is a cold, ionised plasma. Electromagnetic radiation from pulsars and other sources will experience a frequency-dependent index of refraction as they propagate through the ISM. Neglecting, for now, small corrections due to the Galactic magnetic field, the refractive index
+
+$$
+\mu = \sqrt{1-\left({f_p \over f}\right)^2}
+\tag{4.1}
+$$
+
+where f is the wave (observing) frequency and the plasma frequency
+
+$$
+f_p = {1 \over 2\pi}\left({4\pi n_e e^2 \over m_e}\right)^{1/2}
+\simeq 8.5\,{\rm kHz}\left({n_e \over {\rm cm}^{-3}}\right)^{1/2}.
+\tag{4.2}
+$$
+
+Here n_e is the electron number density, while e and m_e are the charge and mass of an electron respectively. For the ISM, we find that typically n_e ~ 0.03 cm^-3 (see, for example, Ables and Manchester (1976)), so that f_p ~ 1.5 kHz. We note from Equation (4.1) that a wave will not propagate if f < f_p. This fact is sometimes used to constrain the plasma density in a pulsar magnetosphere or the location where the radio emission leaves the magnetosphere (Ruderman & Sutherland 1975).
+
+4.1.1 Dispersion
+
+From Equation (4.1) we note that mu < 1. It follows therefore that the group velocity of a propagating wave v_g = c mu is less than the speed of light c. Consequently, the propagation of a radio signal along a path of length d from the pulsar to Earth will be delayed in time with respect to a signal of infinite frequency by an amount
+
+$$
+\tau = \int_0^d \left({1 \over v_g}-{1 \over c}\right)\,dl.
+\tag{4.3}
+$$
+
+Substituting v_g = c mu, and noting that f_p << f to approximate mu, we find
+
+$$
+\tau \simeq {1 \over 2cf^2}\int_0^d f_p^2\,dl
+= {e^2 \over 2\pi m_e c}\,{1 \over f^2}\int_0^d n_e\,dl
+= {\mathcal D\,{\rm DM} \over f^2},
+\tag{4.4}
+$$
+
+where the dispersion measure
+
+$$
+{\rm DM} = \int_0^d n_e\,dl
+\tag{4.5}
+$$
+
+is usually expressed in cm^-3 pc and the dispersion constant
+
+$$
+\mathcal D = {e^2 \over 2\pi m_e c}
+= (4.148808 \pm 0.000003)\times 10^3\,
+{\rm MHz}^2\,{\rm pc}^{-1}\,{\rm cm}^3\,{\rm s}.
+\tag{4.6}
+$$
+
+Note that the uncertainty in D is determined by the uncertainties in e and m_e. Throughout the rest of this book, we will often write the approximate numerical factor of 4.15 for convenience, but recommend using the full precision in D in practice. With this in mind, the delay between two frequencies, f_1 and f_2 both in MHz, is
+
+$$
+\Delta t \simeq 4.15\times 10^6\,{\rm ms}\,
+\left(f_1^{-2}-f_2^{-2}\right)\,{\rm DM}.
+\tag{4.7}
+$$
+
+Note that our definition is the reciprocal of that introduced by Manchester and Taylor (1972), i.e. 1/D = 2.41 x 10^-4 MHz^-2 pc cm^-3 s^-1.
+
+From a measurement of the pulse arrival time at two or more different frequencies, we can infer the DM along the line of sight to the pulsar. The DM then can be used to estimate the distance to a pulsar by numerically integrating Equation (4.5) assuming a model for the Galactic electron density distribution, n_e.
+
+Following earlier relatively simple symmetric distributions for n_e (see, for example, Lyne et al. (1985)), Taylor and Cordes (1993) included the effects of spiral arm structure in their model. The most recent "NE2001" model (Cordes & Lazio 2002a,b) was shown in Figure 1.9 and incorporates the largest number of pulsars with independent distance measurements used for calibration. It models the electron density distribution as the sum of several components, i.e. a thin and thick disk component, features of the local ISM, the spiral arms and contributions from the Galactic centre region. Additionally, it includes "voids" and "clumps" in n_e in order to account for specially identified features, e.g. the Gum nebula.
+
+4.1.2 Faraday rotation
+
+The frequency-dependent delay of the signal also can be expressed in terms of phase rotations. Compared to a pulse observed at infinite frequency (i.e. no dispersion), the pulse phase at a frequency f is observed to lag in phase by Delta Psi = -kd, where k = 2 pi/lambda is the wavenumber and lambda is the wavelength. For a cold, now magnetised plasma:
+
+$$
+k(f) = {2\pi f \over c}\,\mu_\pm
+\simeq {2\pi f \over c}
+\left[1-{1 \over 2}{f_p^2 \over f(f\mp f_B)}\right],
+\tag{4.8}
+$$
+
+and the Galactic magnetic field along the line of sight, B_parallel, enters the computations via the cyclotron frequency
+
+$$
+f_B = {eB_\parallel \over 2\pi m_e c}
+\simeq 3\,{\rm Hz}\left({B_\parallel \over \mu{\rm G}}\right).
+\tag{4.9}
+$$
+
+For the Galaxy, B_parallel ~ 1 microG, so that we expect f_B ~ 3 Hz for the ISM. The last term in Equation 4.8 reflects the different propagation speeds for the left (upper "-" sign) and right-hand (lower "+" sign) circularly polarised waves in a magnetised medium. The time corrections to the group velocity for an unmagnetised medium are < 1 ns and, hence, negligible. However, this minute difference in propagation speeds is the cause of Faraday rotation. The differential phase rotation between left and right circular polarisations
+
+$$
+\Delta\Psi_{\rm Faraday} = \int_0^d (k_R-k_L)\,dl,
+\tag{4.10}
+$$
+
+where k_L and k_R are the wavenumbers of the left and right circularly polarised wave, respectively. Since f >> f_B and f >> f_p, we find:
+
+$$
+\Delta\Psi_{\rm Faraday}
+= {e^3 \over \pi m_e^2 c^2}\,{1 \over f^2}
+\int_0^d n_e B_\parallel\,dl.
+\tag{4.11}
+$$
+
+In addition, as the polarisation position angle (PPA), (see Chapters 3 and 7) is periodic on pi rather than 2 pi for phase, the change in PPA
+
+$$
+\Delta\Psi_{\rm PPA} = {\Delta\Psi_{\rm Faraday} \over 2}
+= \lambda^2\,{\rm RM},
+\tag{4.12}
+$$
+
+where lambda is the wavelength, and we define the rotation measure
+
+$$
+{\rm RM} =
+{e^3 \over 2\pi m_e^2 c^4}
+\int_0^d n_e B_\parallel\,dl.
+\tag{4.13}
+$$
+
+The measurement of both RM and DM gives the average magnetic field strength along the line of sight weighted by electron density:
+
+$$
+\langle B_\parallel\rangle =
+{\int_0^d n_e B_\parallel\,dl \over \int_0^d n_e\,dl}
+= 1.23\,\mu{\rm G}
+\left({{\rm RM} \over {\rm rad\,m}^{-2}}\right)
+\left({{\rm DM} \over {\rm cm}^{-3}{\rm pc}}\right)^{-1}.
+\tag{4.14}
+$$
+
+As we discuss below, the electron density n_e is not homogeneous throughout the Galaxy. Regions of enhanced electron density (e.g. HII regions along the line of sight) produce an unequal weighting and can contribute significantly to the measurement of <B_parallel>. Also, if the direction of the magnetic field changes, represented by a sign change in the contributing B_parallel, the average value, <B_parallel>, is a poor reflection of the true situation. An interpretation of derived magnetic field strengths therefore should be made with care (see, for example, Mitra et al. (2003) and Chapter 7).
+
+4.2 Propagation through a turbulent medium
+
+In the discussion so far, we have described the propagation of pulsar signals assuming a homogeneous ISM. In reality, the electron density is not homogeneous but shows variations in concentration on a wide range of length scales. In addition to temporal variations in dispersion measures (see Figure 4.1), these changes in concentration also distort and scatter the pulse shape. A relative motion between the pulsar, the scattering medium and the observer leads to the phenomenon of interstellar scintillation (ISS) which manifests itself as intensity variations on various timescales. The theoretical description of these phenomena depends to some degree on the assumed form of the turbulence spectrum of the ISM. We keep intentionally the discussion of these effects simple, describing only the case for the so-called Kolmogorov spectrum and assuming that the effects of the scattering medium can be described by the thin screen model (Scheuer 1968) introduced in Chapter 1.
+
+Fig. 4.1. The magnitude of temporal dispersion measure variations plotted against dispersion measure as presented by Hobbs et al. (2004). The dotted line suggests a relationship |d(DM)/dt| ~ 0.0002 sqrt(DM) cm^-3 pc yr^-1 although the scatter is large (~ 1 order of magnitude). The vertical lines at the end of each point give an indication of the variation of d(DM)/dt expected due to each pulsar's transverse velocity. Figure provided by George Hobbs. See also Phillips and Wolszczan (1991) and Backer et al. (1993b).
+
+Although the turbulent medium extends through the whole space between the pulsar and the observer, the thin screen model concentrates these irregularities midway along the propagation path. In spite of its simplicity, this model is capable of explaining the basic effects of scattering and scintillation described in Chapter 1. Other assumptions about the thickness and location of the screen modify the scaling laws of the observed parameters with frequency and distance (see Appendix 2) to some extent. However, for most practical purposes, the basic theory presented below is sufficient to plan and understand observations of pulsars.
+
+4.2.1 Interstellar scattering basics
+
+For simplicity, let us assume first that the inhomogeneities distorting the wave consist of variations in the electron density n_e with a single typical size, a, as shown in Figure 4.2. These distortions perturb the phases of a propagating wave due to changes in the refractive index, Delta mu. After propagation through an inhomogeneity of length a, a wave of frequency f has experienced a phase shift delta Phi = Delta k a. With k = (2 pi/c) mu f, using Equations (4.1) and (4.2) we obtain
+
+Fig. 4.2. Sketch showing inhomogeneities in the ISM that result in the observed scattering and scintillation effects discussed in this chapter. The initially spatially coherent electromagnetic radiation from the pulsar is distorted by a thin screen of irregularities of various scales. The resulting randomly distorted waves are bent by an angle theta_d forming a scatter-broadened image of radius theta_d (see text). Scintillation is produced as the randomly distorted wavefronts form an interference pattern at the location of a distant observer. Figure adapted from an original version (Cordes 2002) provided by Jim Cordes.
+
+$$
+\Delta k\,a = {\pi e^2 \over c m_e}\,{a\,\Delta n_e \over f}.
+\tag{4.15}
+$$
+
+The corresponding phase shift is then
+
+$$
+\delta\Phi = \Delta k\,a =
+{e^2 \over m_e c}\,{a\,\Delta n_e \over f}.
+\tag{4.16}
+$$
+
+After traversing a distance d between the pulsar and the Earth, a ray has encountered a total of about d/a such irregularities in n_e, resulting in a root mean square phase variation
+
+$$
+\Delta\Phi \simeq \sqrt{{d \over a}}\,\delta\Phi
+= {e^2 \over m_e c}\,{\sqrt{ad}\,\Delta n_e \over f}.
+\tag{4.17}
+$$
+
+We can view the effect of this phase difference Delta Phi as a bending of the wavefront by an angle theta_0 at a screen of scale a located midway between the Earth and the pulsar, where
+
+$$
+\theta_0 \simeq {\Delta\Phi/k \over a}
+= {\Delta\Phi c \over 2\pi a f}
+= {e^2 \over \pi m_e}\,{\Delta n_e\sqrt{d} \over \sqrt{a}\,f^2}.
+\tag{4.18}
+$$
+
+As a result of this bending (Figure 4.2) the observer sees a scatter-broadened image as a diffuse disk centred around the pulsar with an angular radius
+
+$$
+\theta_d = {\theta_0 \over 2}
+\simeq {e^2 \over 2\pi m_e}\,{\Delta n_e\sqrt{d} \over \sqrt{a}\,f^2},
+\tag{4.19}
+$$
+
+and an angular intensity distribution
+
+$$
+I(\theta)\,d\theta \propto \exp(-\theta^2/\theta_d^2)\,2\pi\theta\,d\theta.
+\tag{4.20}
+$$
+
+Rays received by the observer at an angle theta arrive slightly later than those that travelled undeflected. The geometric time delay
+
+$$
+\Delta t(\theta) = {\theta^2 d \over 2c}
+\tag{4.21}
+$$
+
+can be used to derive the observed intensity as a function of time:
+
+$$
+I(t) \propto \exp[-c\Delta t/(\theta_d^2 d)] = e^{-\Delta t/\tau_s},
+\tag{4.22}
+$$
+
+where
+
+$$
+\tau_s = {\theta_d^2 d \over c}
+\propto {\Delta n_e^2 d^2 \over a f^4}.
+\tag{4.23}
+$$
+
+As a result, a sharp single pulse emitted by the pulsar is measured by the observer as a one-sided exponential function with a scattering time-scale tau_s. Any more complicated pulse shape will appear as a convolution of the pulse with the exponential. The larger the scattering disk, the longer the time delay and tail of the exponential.
+
+This simple picture of multi-path propagation reproduces the basic features of the observed pulse scattering and predicts a strong dependence with frequency and distance to the pulsar (tau_s proportional to f^-4 d^2); (see Chapter 1). A more detailed comparison of this model with the data requires some modifications that we discuss in Section 4.2.3.
+
+4.2.2 Interstellar scintillation basics
+
+The short-term intensity variations seen for many pulsars and interpreted as interstellar scintillation (see Figure 1.10) can be understood in terms of the simple model we have applied so far to scattering. The signals received over the time tau_s show a variety of phases given by delta Phi ~ 2 pi f tau_s. Interference of the signals produces an interference pattern at the observer's plane. This pattern of patches with enhanced and reduced intensity moves over the observer due to relative motions between the pulsar, the scattering medium and the observer (see Figure 4.2). As a result, we observe changes in intensity with a timescale Delta t that depend upon the relative velocity.
+
+Interference can occur only if the phases of the waves do not differ by more than about 1 radian. As the phases depend on frequency, there is a limitation in bandwidth of the interfering waves, i.e. waves of frequencies outside a decorrelation bandwidth, also referred to as the scintillation bandwidth Delta f, will not contribute. The condition for interference is therefore
+
+$$
+2\pi\,\tau_s\,\Delta f \sim 1,
+\tag{4.24}
+$$
+
+which implies the scaling Delta f proportional to 1/tau_s proportional to f^4.
+
+Scintillation therefore produces a pattern of intensity variation in both frequency and time. This pattern can be measured in form of a dynamic spectrum, a two-dimensional image of pulse intensity as a function of observation time and frequency (see Section 7.4.4 and Figure 7.9). A scintle is an enhanced region of flux density in this frequency time plane. Its size in frequency, scintillation bandwidth Delta f, is usually defined as the half-width at half-maximum of the autocorrelation function of the spectrum. Similarly, the scintle size in time, the scintillation timescale Delta t, can be measured as the half-width at 1/e along the time axis (Cordes 1986); (see Section 7.4.4 for more details).
+
+4.2.3 Modelling turbulence in the interstellar medium
+
+While the simple picture presented above describes the basic phenomena of interstellar scattering and scintillation, in reality the variations in electron density in the ISM show a distribution of scales rather than a single size. In order to interpret the observations in more detail, we now replace the single linear size a by a distribution of length scales that can be characterised by a spatial wavenumber spectrum. A commonly used description (see, for example, Rickett (1990)) is the extended power law model:
+
+$$
+P_{n_e}(q,z) =
+{C_{n_e}^2(z) \over (q^2+\kappa_0^2)^{\beta/2}}
+\exp\left(-{q^2 \over \kappa_i^2}\right),
+\tag{4.25}
+$$
+
+where q = 1/a is the magnitude of the three-dimensional wavenumber, the "inner" and "outer" scales of the turbulence are kappa_i and kappa_0, respectively, and C^2_{n_e}(z) denotes the strength of the fluctuations along a given line of sight. The integral
+
+$$
+{\rm SM} = \int_0^d C_{n_e}^2(z)\,dz
+\tag{4.26}
+$$
+
+provides a measure of the electron density fluctuations along the line of sight and is known as the scattering measure (see, for example, Cordes et al. (1991)). Although SM can be determined from pulse broadening and scintillation measurements and from angular diameter measurements of Galactic and extra-galactic sources, different observables correspond to different lines of sight weighting for C^2_{n_e}, resulting in different values of SM for the same line of sight (see, for example Cordes & Lazio (2002a)). We concentrate our discussion on scintillation parameters and pulse broadening measurements.
+
+The inner and outer scales kappa_i and kappa_0 correspond to cut-offs in scale sizes. For wavenumbers q in the range kappa_0 < q < kappa_i, Equation (4.25) simplifies to a power law model with a spectral index beta, i.e.
+
+$$
+P_{n_e}(q) = C_{n_e}^2\,q^{-\beta}.
+\tag{4.27}
+$$
+
+The study of other turbulent media suggest that energy cascades down from larger to smaller scales, resulting in a Kolmogorov spectrum with beta = 11/3. Most observations show that this is also the case for the ISM (even over 10 orders of magnitude in wavenumber, i.e. 10^8 m < 1/q < 10^18 m); (Armstrong et al. 1995), although deviations are seen along some lines of sight. A recent review by Gupta (2000) summarises the arguments for and against a pure Kolmogorov spectrum. For the remainder of this chapter, we assume for simplicity that the interstellar turbulence can indeed be described by Equation (4.27) and beta = 11/3.
+
+For the wavenumber spectrum of Equation (4.27), scattering time and decorrelation bandwidth depend upon observing frequency as follows:
+
+$$
+\tau_s \propto f^{-\alpha},\qquad
+\Delta f_{\rm DISS} \propto f^\alpha,
+\tag{4.28}
+$$
+
+where alpha = 2 beta/(beta - 2) (see, for example, Lee and Jokipii (1975)). For a Kolmogorov spectrum, where beta = 11/3, we have alpha = 4.4 rather than 4 in the thin screen model presented above. Also note that we have added the subscript "DISS" (diffractive interstellar scintillation) to the scintillation bandwidth as we will find below (Section 4.2.5.2) that different branches of scintillation exist, of which "diffractive" is relevant here.
+
+In our simple picture we had highlighted also the relationship between tau_s and Delta f_DISS which we now write in a more general form:
+
+$$
+2\pi\,\tau_s\,\Delta f_{\rm DISS} = C_1.
+\tag{4.29}
+$$
+
+Although the "constant" C_1 is, indeed, close to unity as was the case for Equation (4.24) (Rickett 1977), its value changes slightly for different geometries and models of the turbulence wavenumber spectrum. For a Kolmogorov spectrum, C_1 = 1.16 (see, for example, Lambert and Rickett (1999)). In principle, a simultaneous determination of Delta f_DISS by scintillation measurements and tau_s by pulse broadening observations can be used to test this relationship. However, it was emphasised by Cordes and Rickett (1998) that the 1/e decay time determined from scattered pulse profiles (as we introduced this quantity in Equation (4.22)) can deviate somewhat from the mean delay time of the scattered wave signal (as given in Equation (4.21)).
+
+4.2.4 Interstellar scintillation revisited
+
+The different sizes of the electron density inhomogeneities in the ISM contribute differently to the observed phenomena. Depending also on the distance to the pulsar, three different kinds of scintillation can be observed. While we can distinguish between weak and strong scintillation, strong scintillation has two different branches: (a) diffractive; (b) refractive scintillation. In order to discuss the differences between these regimes, it is useful first to introduce a number of related quantities.
+
+As before, we consider the waves as passing through a thin scattering screen mid-way between us and the pulsar. The screen disturbs the phases of the waves so that they are scattered into an angular spectrum of (e^-1/2) width theta_d (cf. Equation (4.19)). At some distance d the phase modulation caused by the screen produces an amplitude modulation and hence a scintle pattern in the plane of the observer. Whether weak or strong scintillation is observed depends upon the size of the total phase perturbations at this distance. We can determine the regime by considering the size of the circular region on the scattering screen centred around the source at which the phase differences are less than or equal to 1 radian. The size of this region is known as the field coherence scale s_0 = 1/(k theta_d). In the simple model with a single scale size, we find s_0 proportional to f d^-0.5. For the Kolmogorov spectrum of turbulence, the dependencies are modified slightly so that s_0 proportional to f^1.2 d^-0.6.
+
+We can compare the coherence scale to the Fresnel scale, l_F, known from diffractive optics when we observe an interference pattern in the near field of, for example, an illuminated circular aperture (see, for example, Smith and Thompson (1988)). In this case, the radius of the first Fresnel zone
+
+$$
+l_F = \sqrt{{\lambda d \over 2\pi}}
+\simeq 1.2\times10^9\,{\rm m}
+\left({f \over {\rm GHz}}\right)^{-1/2}
+\left({d \over {\rm kpc}}\right)^{1/2}.
+\tag{4.30}
+$$
+
+For the case s_0 >> l_F, the phase fluctuations within l_F are very small. At an observer's distance d for which this condition holds, intensity variations are caused only by the small phase perturbations within the Fresnel zone that lead to weak scintillation. The Fresnel scale therefore is the dominating length scale for weak scintillation.
+
+At larger distances, we leave eventually the near field and enter the regime of Fraunhofer diffraction in which larger phase perturbations of many radians across the screen are effective. This occurs when s_0 < l_F. On this scale the effective screen also contains many points with stationary phase. This leads to multi-path propagation, observed as pulse scatter broadening. In terms of geometric optics, we reach a distance at which rays of different parts of the screen can cross, leading to large intensity variations and, hence, strong scintillation.
+
+As indicated, strong scintillation consists of two branches: (a) diffractive; (b) refractive scintillation. While diffractive scintillation is that described in our simple picture above, caused by interference between components of the angular spectrum, the refractive branch corresponds to the larger sizes of the scattering disk. This defines the refractive scale
+
+$$
+l_R = \theta_d d = {l_F^2 \over s_0} = k\theta_d l_F^2.
+\tag{4.31}
+$$
+
+Refractive scintillation causes small-amplitude intensity variations from large-scale focusing and defocusing of the radiation.
+
+4.2.5 Observable manifestations of the scintillation regimes
+
+Now we compare the observational manifestations of the three different types of scintillation. In addition to scintillation bandwidth and timescale, two useful quantities are: (a) modulation index; (b) scintillation strength. The modulation index:
+
+$$
+m = {\sigma_S \over \langle S\rangle},
+\tag{4.32}
+$$
+
+where sigma_S is the standard deviation of the observed flux densities and <S> is their mean. The scintillation strength, u, is defined (Rickett 1990) and related to observing frequency f and the observable scintillation bandwidth of strong (diffractive) scintillation, Delta f_DISS as follows:
+
+$$
+u = {l_F \over s_0}
+= \sqrt{{2f \over \Delta f_{\rm DISS}}}
+\propto f^{-1.7}d.
+\tag{4.33}
+$$
+
+This expression can be used to define the transition between weak scintillation (u < 1) and strong scintillation (u > 1).
+
+4.2.5.1 Weak scintillation
+
+As discussed above, weak scintillation occurs when s_0 >> l_F or when u < 1 and phase perturbations are small at the distance of the observer. A relative motion of the pulsar with a speed V_ISS moves the scintle pattern produced in the plane of the observer. For a fixed observer, this results in an intensity modulation as the bright and weak intensity patches pass by. The timescale for this intensity variation is determined by the speed of the scintle pattern and, hence, that of the pulsar (see, for example, Rickett (1990)),
+
+$$
+\Delta t_{\rm weak} =
+{l_F \over V_{\rm ISS}}
+\simeq 3.35\,{\rm h}
+\left({d \over {\rm kpc}}\right)^{1/2}
+\left({f \over {\rm GHz}}\right)^{-1/2}
+\left({V_{\rm ISS} \over 100\,{\rm km\,s}^{-1}}\right)^{-1}.
+\tag{4.34}
+$$
+
+The expected modulation index m_weak ~ 0.1-0.3 can be related to the scintillation strength as follows:
+
+$$
+m_{\rm weak} = u^{5/6}
+= \left({f \over f_c}\right)^{-17/12}
+\propto f^{-17/12}d^{5/6},
+\tag{4.35}
+$$
+
+which is in good agreement with the observations (see, for example, Malofeev et al. (1996) and Kramer et al. (2003b)). The scintillation bandwidth
+
+$$
+\Delta f_{\rm weak} \sim f
+\tag{4.36}
+$$
+
+and therefore is large. We can use the condition u = 1 to estimate the transition frequency, f_c, from weak to strong scintillation. Given the frequency and distance dependencies from Equation (4.33) we find that
+
+$$
+f_c = f(u=1) \propto d^{0.6},
+\tag{4.37}
+$$
+
+which is again consistent with the observations (Malofeev et al. 1996). We will derive a numerical estimate in the next section discussing strong, diffractive scintillation (see Figure 4.3), but in general we expect a transition from strong to weak scintillation at a frequency of a few GHz for a pulsar at a distance of about 1 kpc. As an example, for PSR B1133+16 shown in Figure 1.10 the transition frequency is estimated to be at 2 GHz (Kramer et al. 2003b). Hence, most pulsar observations are carried out in the strong scintillation regime. As we will see later, at the transition frequency, f_c, deep modulations can occur.
+
+4.2.5.2 Diffractive scintillation
+
+Diffractive interstellar scintillation (DISS) is in the strong scintillation regime and occurs when s_0 < l_F or when phase perturbations are large at the distance of the observer and u > 1, and is recognised as strong-intensity variations in both time and frequency. These become most obvious in dynamic spectra, as introduced in Section 4.2.2, where the timescale, Delta t_DISS, and frequency scale, Delta f_DISS, can be measured readily. As for weak scintillation, we expect also the timescale to be related to the pulsar speed. For DISS, the dominating length scale is the field coherence scale, s_0, so that
+
+$$
+\Delta t_{\rm DISS} = {s_0 \over V_{\rm ISS}}.
+\tag{4.38}
+$$
+
+The measurement of the scintillation timescale can therefore be used to determine the transverse speed of a pulsar. We will discuss this application in more detail in Sections 4.2.6 and 7.4.4.
+
+The decorrelation bandwidth, Delta f_DISS, is related to the scattering timescale via Equation (4.29), which for a Kolmogorov spectrum becomes
+
+$$
+\Delta f_{\rm DISS}
+= {C_1 \over 2\pi\tau_s}
+\simeq 185\,{\rm Hz}\left({\tau_s \over {\rm ms}}\right)^{-1}.
+\tag{4.39}
+$$
+
+As tau_s increases with distance, we expect Delta f_DISS to decrease accordingly. A rough estimate (Cordes et al. 1985)
+
+$$
+\Delta f_{\rm DISS}
+\sim 11\,{\rm MHz}
+\left({f \over {\rm GHz}}\right)^{4.4}
+\left({d \over {\rm kpc}}\right)^{-2.2}
+\tag{4.40}
+$$
+
+was derived from scintillation measurements and a normalisation of the turbulence spectrum (see Equation (4.27)) for a given line of sight. This is achieved by determining C^2_n from observables. For a Kolmogorov spectrum, Cordes et al. (1990) found
+
+$$
+C_n^2 =
+0.002\,{\rm m}^{-20/3}
+\left({d \over {\rm kpc}}\right)^{-11/6}
+\left({f \over {\rm GHz}}\right)^{11/3}
+\left({\Delta f_{\rm DISS} \over {\rm MHz}}\right)^{-5/6}.
+\tag{4.41}
+$$
+
+Rather than using the estimate from Equation (4.40), it is preferable wherever possible to obtain a measurement of either Delta f_DISS or tau_s. The other quantity can be computed from Equation (4.39). In fact, this result implies also that very often only one of these two quantities is measurable, depending on observing frequency and available spectral resolution. Only at intermediate frequencies may both quantities be determined.
+
+Fig. 4.3. Estimated frequency for the transition from strong to weak scintillation as a function of the observable dispersion measures (see text).
+
+If a measurement of neither Delta f_DISS nor tau_s is available, we can use also an empirical relationship between tau_s and the dispersion measure. A number of authors have investigated this relationship (see, for example, Ramachandran et al. (1997) and Cordes and Lazio (2002b)). We show the most recent compilation of measurements by Bhat et al. (2004) in Figure 4.4. Fitting these data to a parabola in log(DM), Bhat et al. (2004) find
+
+$$
+\log\tau_s =
+-6.46 + 0.154\log({\rm DM})
++1.07[\log({\rm DM})]^2
+-3.86\log f,
+\tag{4.42}
+$$
+
+where the units are ms for tau_s, cm^-3 pc for DM and GHz for f. Note that the fitted frequency exponent is 3.86 rather than the expected value of 4.4 for Kolmogorov turbulence. This was noticed by Lohmer et al. (2001) and may arise from large-scale refraction or from the truncation of scattering screens transverse to the Earth-pulsar line of sight.
+
+Fig. 4.4. Pulsar scatter-broadening times as a function of dispersion measure (Bhat et al. 2004). The solid curve represents the best fit (see Equation (4.42)). A large scatter about this fit is noticeable. Figure provided by Ramesh Bhat.
+
+Using Equations (4.33), (4.39) and (4.42), and setting u = 1, we can make an estimate of the transition frequency from strong to weak scintillation, f_c. The result is shown in Figure 4.3. Given the large scatter around the fitted curve in Equation (4.42), a more reliable estimate is obtained using actual measurements of tau_s or Delta f_DISS for a given pulsar.
+
+For diffractive scintillation, the intensity is strongly modulated and the observed flux density of a pulsar can differ significantly from its intrinsic flux density. The number of scintillation maxima that are averaged together in time and frequency determines the strength of the modulation. If the observing bandwidth Delta f_obs < Delta f_DISS, only one scintle is sampled at any instant and the modulation is up to 100 per cent between successive observations. Averaging in either time, so that Delta t_obs > Delta t_DISS, or frequency, so that Delta f_obs > Delta f_DISS (see, for example, Figure 1.10), is required in order to obtain a reliable flux density measurement of the pulsar.
+
+We can estimate the modulation index from the number of scintles sampled in a Delta f_obs x Delta t_obs plane. Following Cordes and Lazio (1991), the number of scintles sampled in time and frequency are, respectively:
+
+$$
+N_t \simeq 1+\eta_t{\Delta t_{\rm obs} \over \Delta t_{\rm DISS}},
+\qquad
+N_f \simeq 1+\eta_f{\Delta f_{\rm obs} \over \Delta f_{\rm DISS}},
+\tag{4.43}
+$$
+
+where eta is empirically determined to lie in the range 0.1-0.2. The observed modulation index is then
+
+$$
+m_{\rm DISS}^{\rm obs}
+= {m_{\rm DISS} \over \sqrt{N_tN_f}}
+= {1 \over \sqrt{N_tN_f}}.
+\tag{4.44}
+$$
+
+If the scintles are large compared to Delta t_obs and Delta f_obs, large flux modulation is observed, i.e. m_DISS^obs ~ 1. If the scintles are small, as is the case for highly dispersed distant pulsars, as Delta f_DISS proportional to d^-2.2, the observed modulation index becomes small and we obtain stable flux density measurements. In this case, only a weak and slow modulation is observed due to refractive scintillation.
+
+4.2.5.3 Refractive scintillation
+
+Although diffractive scintillation was recognised soon after the discovery of pulsars (Lyne & Rickett 1968), it was not until 1982 that an additional refractive branch of strong scintillation was noticed. Sieber (1982) realised that the timescales of long and weak intensity modulations, which had been considered to be intrinsic to the pulsar, increased with source distance. Rickett et al. (1984) proposed that these were due to refractive interstellar scintillation (RISS) and a number of theoretical studies followed (see, for example, Romani et al. (1986)). Today, RISS is also accepted as an explanation for intensity variations observed in active galactic nuclei (see, for example, Rickett (1990), Rickett et al. (1995), Jauncey et al. (2001), Dennett-Thorpe and de Bruyn (2002)). These sources are too extended to show DISS, but are small enough to exhibit RISS, which takes place when l_R > l_F. Given Equation (4.31), this implies l_R >> s_0, indeed confirming that RISS occurs in the strong scintillation regime.
+
+The basic principles of RISS can be understood in terms of geometric optics and the effect of the focusing and defocusing of rays from the scattering screen (see, for example, Romani et al. (1986)), leading to clear predictions for the modulation index, m_RISS and scintillation timescale Delta t_RISS. Observational results, however, indicate that there are significant deviations from theoretical predictions (see, for example, Gupta (2000)). We will nevertheless list the expected basic relationships.
+
+As RISS involves the much larger refractive scale, its timescale
+
+$$
+\Delta t_{\rm RISS} =
+{l_R \over V_{\rm ISS}}
+= {l_F^2 \over s_0V_{\rm ISS}}
+\tag{4.45}
+$$
+
+is much longer than the other regime. This expression conveniently relates the DISS and RISS quantities, enabling us to estimate the expected timescales. As expected from Sieber's (1982) observations, Delta t_RISS increases with distance, d, in contrast to Delta t_DISS,
+
+$$
+\Delta t_{\rm RISS}
+= u^2\Delta t_{\rm DISS}
+\propto f^{-2.2}d^{1.6}.
+\tag{4.46}
+$$
+
+We can relate the modulation index to the scintillation strength as (see, for example, Romani et al. (1986) and Rickett (1996))
+
+$$
+m_{\rm RISS} = u^{-1/3}
+= \left({s_0 \over l_F}\right)^{1/3}
+\propto f^{0.57}d^{-0.37}.
+\tag{4.47}
+$$
+
+The modulation index increases towards the transition frequency, f_c, contributing to the strong intensity variation due to DISS. As a result, near u ~ 1, the total variance in intensity
+
+$$
+m_{\rm total}^2
+\simeq m_{\rm DISS}^2 + m_{\rm RISS}^2
++ m_{\rm DISS}^2m_{\rm RISS}^2
+\tag{4.48}
+$$
+
+can be greater than unity (Rickett 1990).
+
+Refractive scintillation also is observed in dynamic spectra with a variety of phenomena such as bands of features drifting in frequency and time, long-term changes in the decorrelation bandwidth Delta f_DISS, criss-cross patterns with overlapping slopes of opposite signs and also periodic patterns referred to as "fringes". For a summary of these phenomena see, for example, Rickett (1990) or Gupta et al. (1994). Their study can be used not only to constrain the turbulence wavenumber spectrum on large scales, but also to resolve a pulsar magnetosphere when systematic shifts in the periodic spectra are interpreted as multiple imaging events from different parts of the pulse profile (Wolszczan & Cordes 1987; Smirnova & Shishov 1989). The derived emission heights are typically larger than those estimated from other methods (see Chapter 3), but recent results produce more consistent numbers (Gupta et al. 1999).
+
+Recently, the loosely organised criss-cross patterns in the dynamic spectra have been shown to produce faint but distinct features in the "secondary spectrum", representing a Fourier transform of the dynamic spectrum (Stinebring et al. 2001; Hill et al. 2003). These features appear in the form of "arcs" that can be used to study deviations from the simple thin-screen model and to probe the structure of the ISM on ~ 1 AU size scales. The curvature of the arc is related to the location of the screen along the line of sight. Multiple arcs indicate the presence of multiple thin screens. We will discuss secondary spectra and their applications further in Chapter 7.
+
+4.2.5.4 Summary
+
+We summarise the behaviour of the modulation in all three scintillation regimes in Figure 4.5 as a function of frequency and dispersion measure. The various scaling laws for the observable parameters are summarised in Appendix 2.
+
+Fig. 4.5. The modulation indices due to weak scintillation, strong diffractive and strong refractive scintillation as a function of dispersion measure (a) and observing frequency (b). These are estimates using the quoted relationships for an observing frequency of 2.7 GHz (a) and a DM of 20 cm^-3 pc (b). This frequency often is considered to be ideal for high-precision pulsar timing as it strikes a compromise between the effects of "interstellar weather" and the steep pulsar spectra.
+
+4.2.6 Scintillation speeds
+
+The relationship between the scintillation timescales and the relative motion of the pulsar allows the determination of the pulsar speed transverse to the line of sight, V_ISS (see Figure 4.2). Since diffractive parameters usually are easier to measure, this method uses observations of DISS to infer V_ISS. From Equation (4.38) we see that V_ISS = s_0/Delta t_DISS. Since s_0 = 1/(k theta_d), using our definition of tau_s (Equation (4.23)) and Equation (4.29), we find s_0 proportional to (d Delta f_DISS)^1/2/f (see also, for example, Gupta et al. (1994)). Inserting this into Equation (4.38), we obtain
+
+$$
+V_{\rm ISS}
+= A
+\left({d \over {\rm kpc}}\right)^{1/2}
+\left({\Delta f_{\rm DISS} \over {\rm MHz}}\right)^{1/2}
+\left({f \over {\rm GHz}}\right)^{-1}
+\left({\Delta t_{\rm DISS} \over {\rm s}}\right)^{-1},
+\tag{4.49}
+$$
+
+where the constant A depends again on the geometry, the location of the scattering screen and the form of the turbulence spectrum. Its numerical value varies slightly among different authors. Gupta (1995) quotes A = 3.85 x 10^4 km s^-1, while Cordes and Rickett (1998) derive A = 2.53 x 10^4 km s^-1. In spite of these uncertainties, the numbers are in good agreement (Nicastro et al. 2001) with proper motion measurements using pulsar timing (Chapter 8) or interferometric measurements (Chapter 9). In Chapter 7 we show how to measure the scintillation timescale and bandwidth and apply this method to observations of binary pulsars.
+
+4.3 Further reading
+
+There are a number of useful reviews on the propagation effects caused by the ISM. Cordes (2002) describes their impact on pulsar observations. Han (2004) gives a summary of RM measurements and their implications for the Galactic magnetic field. See also the recent work by Mitra et al. (2003) demonstrating possible caveats in such analyses. It is useful to put these Galactic measurements in the context of observations of magnetic fields in other Galaxies (see, for example, Beck (2002)).
+
+Specialised reviews on propagation issues in the ISM can be found in Rickett (1977; 1990; 1996), Narayan (1992) and Gupta (2000). Further details can be found in Cordes et al. (1985; 1986), Armstrong et al. (1995) and Cordes and Lazio (1991). While we have assumed a Kolmogorov spectrum for the interstellar turbulence, those wishing to go further should consult Lambert and Rickett (1999), Gupta (2000) and Cordes and Lazio (2001) for different geometries and turbulence spectra. Observational evidence for non-Kolmogorov turbulence was presented by Lohmer et al. (2001) and Bhat et al. (2004). For observable deviations from the thin-screen model, e.g. by extended or multiple screens, see Lambert and Rickett (1999; 2000) or Cordes and Lazio (2001).
+
+Interstellar scintillation and scattering also can be used to study special regions in the Galaxy. Recent work on the local ISM and the so-called "Local Bubble" can be found in Bhat et al. (1998). Lazio and Cordes (1998a,b) studied the scattering effects in the very interesting Galactic Centre region (see also Section 6.5.6). Mitra and Ramachandran (2001) studied the effect of scattering in the direction of the Gum nebula.
+
+Work on scintillation speeds has been presented by numerous authors (see, for example, Gothoskar and Gupta (2000), Johnston et al. (1998), Nicastro and Johnston (1995) and Gupta (1995)). Details of the comparison between scintillation speeds and pulsar proper motions can be found in Lyne and Smith (1982), Cordes (1986), Gupta (1995), Cordes and Rickett (1998), Deshpande and Ramachandran (1998) and most recently by Nicastro et al. (2001). If all model parameters are known from a combination of proper motion, scintillation and scattering measurements, the distance of a pulsar can be determined (see, for example, Deshpande and Ramachandran (1998)).
+
+The important aspects of "interstellar weather" on pulsar timing observations are addressed by Foster and Cordes (1990), Backer and Wong (1999) and recently by Backer and Ramachandran (2004). As pointed out by Backer and Wong (1999), the frequency dependence of the scattering angle and path geometry of the propagating signals means that each observing frequency is probing a different volume of the ISM. As a consequence, the column density of electrons depends to some extent on frequency, so that the DM is not an accurately definable quantity at any instant, contributing to the observed DM variations (see Figure 4.1).
+
+We have not discussed the rarely observed extreme scattering events. These were first seen in observations of extra-galactic sources (Fiedler et al. 1987) and later seen in timing observations of PSR B1937+21 (Cognard et al. 1993). Romani et al. (1987), Fiedler et al. (1994) and Walker (2001) give a theoretical description of these events.
+
+4.4 Available resources
+
+An extensive source on modelling the Galactic electron density distribution is provided by the authors of the latest model: "NE2001" (Cordes & Lazio 2002a,b). Also, they cover some aspects of propagation effects in the inhomogeneous ISM and provide software that implements their electron density model to convert between dispersion measure and distance. Additional parameters related to their model predictions for the fluctuations in the electron density and scintillation bandwidths and timescales are also computed. Software to estimate pulsar distances using alternative electron density models (see, for example, Gomez, Benjamin and Cox (2001)) are also available. On the book web site (see Appendix 3) we provide links to the various software, as well as a single program to compare distance estimates for a variety of models.
